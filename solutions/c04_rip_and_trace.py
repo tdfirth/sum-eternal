@@ -58,8 +58,8 @@ def rotate_vectors(vecs, angle):
         [[cos(θ), -sin(θ)],
          [sin(θ),  cos(θ)]]
 
-        Then apply it to each vector. The einsum pattern is 'ij,nj->ni'.
-        (Matrix indices ij, n vectors with j components, output n vectors with i components)
+        Then apply it to each vector using batch_matrix_vector logic from Chapter 3.
+        Which dimension of the matrix contracts with which dimension of the vectors?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Rotate your perspective.")
@@ -81,8 +81,8 @@ def normalize_vectors(v):
         [[0.6, 0.8], [0, 1]]
 
     Hint:
-        Compute magnitude using 'ni,ni->n' (squared, then sqrt).
-        Divide each component by its vector's magnitude.
+        First compute the magnitude of each vector (like batch_magnitude_sq, then sqrt).
+        Then divide each component by its vector's magnitude.
         Watch out for zero-length vectors (add small epsilon).
     """
     # YOUR CODE HERE

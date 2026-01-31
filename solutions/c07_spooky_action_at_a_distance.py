@@ -31,8 +31,8 @@ def point_distances(origin, points):
         [5.0, 13.0]
 
     Hint:
-        1. Compute difference vectors: points - origin (broadcasts to (n, 2))
-        2. Square and sum each: 'ni,ni->n'
+        1. Compute difference vectors: points - origin
+        2. Compute squared magnitude of each (like batch_magnitude_sq)
         3. Take square root
     """
     # YOUR CODE HERE
@@ -59,14 +59,15 @@ def all_pairs_distances(a, b):
 
     Hint:
         For each pair (i, j), compute ||a[i] - b[j]||.
-        Expand: ||a - b||² = ||a||² + ||b||² - 2*a·b
 
-        Use:
-        - 'id,id->i' for ||a||²
-        - 'jd,jd->j' for ||b||²
-        - 'id,jd->ij' for a·b
+        Expand using the identity: ||a - b||² = ||a||² + ||b||² - 2*(a·b)
 
-        Then combine and sqrt.
+        You'll need:
+        - Squared magnitude of each point in 'a'
+        - Squared magnitude of each point in 'b'
+        - All pairs dot product between 'a' and 'b'
+
+        Then combine with broadcasting and take sqrt.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Every distance. All pairs. The matrix of space.")

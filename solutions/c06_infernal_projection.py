@@ -91,9 +91,9 @@ def shade_by_distance(colors, dists, max_dist):
         # Green is at 15/30 = 0.5 -> factor = 0.5
 
     Hint:
-        Compute shade factors from distances.
-        Then multiply each color component by its factor.
-        Pattern for the multiply: 'rc,r->rc'
+        Compute shade factors from distances (one factor per ray).
+        Then multiply each color's RGB components by its factor.
+        How do you broadcast a per-ray scalar across the 3 color channels?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Shade the world. Distance fades all.")

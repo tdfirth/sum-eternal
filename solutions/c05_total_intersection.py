@@ -59,8 +59,8 @@ def batch_cross_2d(a, b):
         [1, -1]
 
     Hint:
-        a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0]
-        Or use clever einsum indexing.
+        Apply the cross_2d formula to each pair.
+        How do you select the first component of all vectors? The second?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Batch the crosses. Parallel computation.")
@@ -85,9 +85,9 @@ def all_pairs_cross_2d(a, b):
          [-1, 0]]
 
     Hint:
-        a[r, 0] * b[w, 1] - a[r, 1] * b[w, 0]
-        Use einsum to create the outer-product-like structure.
-        'r,w->rw' for each multiplication.
+        Like all_pairs_dot, but with the cross product formula instead of dot.
+        You need every combination of vectors from 'a' and 'b'.
+        Think: outer product structure, but with cross product math.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Every ray. Every wall. Total intersection.")
@@ -153,11 +153,11 @@ def ray_wall_t_values(player, ray_dirs, wall_starts, wall_dirs):
         Return a large value (inf) in this case.
 
     Hint:
-        1. Compute (A - P) for each wall: shape (w, 2)
-        2. Compute cross((A-P), W) for each wall: shape (w,)
-           Then broadcast to shape (r, w)
-        3. Compute cross(D, W) for each (ray, wall): shape (r, w)
-        4. Divide, handling near-zero denominators
+        Cramer's rule: t = ((A - P) × W) / (D × W)
+
+        Break it into steps: compute the numerator cross products,
+        compute the denominator cross products, then divide.
+        Use your earlier functions! Handle division by zero.
     """
     # YOUR CODE HERE
     raise NotImplementedError("T marks the distance. Compute it for all.")
@@ -189,8 +189,9 @@ def ray_wall_s_values(player, ray_dirs, wall_starts, wall_dirs):
         When det ≈ 0, return a value outside [0,1] (e.g., -1 or inf).
 
     Hint:
-        Similar to t_values, but the numerator cross product is different.
-        cross((A-P), D) instead of cross((A-P), W)
+        Same structure as t_values, but Cramer's rule gives a different numerator.
+        Look at the formula: s = ((A - P) × D) / (D × W)
+        What changed from the t formula?
     """
     # YOUR CODE HERE
     raise NotImplementedError("S marks the spot. Where on the wall?")

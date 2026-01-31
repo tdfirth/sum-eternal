@@ -39,7 +39,8 @@ def project_points_onto_ray(points, origin, direction):
 
     Hint:
         t = (P - origin) · direction
-        Use einsum: 'ni,i->n' for the dot product of each point with direction.
+        You need the dot product of each offset vector with the direction.
+        The direction is shared across all points.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Project onto the ray. Find the distance.")
@@ -68,11 +69,11 @@ def perpendicular_distance_to_ray(points, origin, direction):
         [1.0, 0.0, 3.0]
 
     Hint:
-        Use the 2D cross product magnitude:
+        The perpendicular distance equals the magnitude of the 2D cross product:
         |perp_dist| = |(P - origin) × direction|
 
-        For 2D: cross(a, b) = a[0]*b[1] - a[1]*b[0]
-        Compute this for each point.
+        Use absolute value of the cross product.
+        You've computed cross products before in Chapter 5.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Perpendicular distance. How close is close enough?")
@@ -137,9 +138,9 @@ def move_toward_point(positions, target, speeds, dt):
         [[9.0, 0.0], [0.0, 8.0]]  # approximately
 
     Hint:
-        1. Compute direction to target: target - positions (shape: n, 2)
-        2. Normalize each direction vector
-        3. Scale by speed * dt: use 'ni,n->ni' or broadcasting
+        1. Compute direction to target: target - positions
+        2. Normalize each direction vector (use normalize_vectors logic)
+        3. Scale by each entity's speed * dt
         4. Add to positions
     """
     # YOUR CODE HERE
