@@ -283,62 +283,50 @@ class Renderer:
         sep_rect = sep_text.get_rect(centerx=self.width // 2, y=sep_y)
         self.screen.blit(sep_text, sep_rect)
 
-        # Get actual function results
-        c1_results = self._get_chapter1_results()
-        c2_results = self._get_chapter2_results()
-
         # Starting Y position for operations
         y = sep_y + 40
         left_margin = margin + 30
 
-        # Chapter 1: Vector Operations
         c1_complete = data.progress >= Progress.CHAPTER_1_COMPLETE
-        status_text = "ONLINE" if c1_complete else "INITIALIZING..."
-        status_color = TERM_GREEN if c1_complete else TERM_AMBER
 
-        section_header = self.font_small.render(f"VECTOR OPS: {status_text}", True, status_color)
-        self.screen.blit(section_header, (left_margin, y))
-        y += 30
+        if not c1_complete:
+            # Show Chapter 1: Vector Operations
+            c1_results = self._get_chapter1_results()
 
-        # Chapter 1 function results
-        c1_functions = [
-            ("vector_sum", "sum(v)", c1_results.get("vector_sum")),
-            ("element_multiply", "a * b", c1_results.get("element_multiply")),
-            ("dot_product", "a . b", c1_results.get("dot_product")),
-            ("outer_product", "a (x) b", c1_results.get("outer_product")),
-            ("matrix_vector_mul", "M @ v", c1_results.get("matrix_vector_mul")),
-            ("matrix_matrix_mul", "M @ M", c1_results.get("matrix_matrix_mul")),
-        ]
+            section_header = self.font_small.render("CHAPTER 1: VECTOR OPS", True, TERM_AMBER)
+            self.screen.blit(section_header, (left_margin, y))
+            y += 30
 
-        y = self._render_function_list(c1_functions, y, left_margin, TERM_GREEN, TERM_DIM)
+            c1_functions = [
+                ("vector_sum", "sum(v)", c1_results.get("vector_sum")),
+                ("element_multiply", "a * b", c1_results.get("element_multiply")),
+                ("dot_product", "a . b", c1_results.get("dot_product")),
+                ("outer_product", "a (x) b", c1_results.get("outer_product")),
+                ("matrix_vector_mul", "M @ v", c1_results.get("matrix_vector_mul")),
+                ("matrix_matrix_mul", "M @ M", c1_results.get("matrix_matrix_mul")),
+            ]
 
-        y += 20  # Gap between sections
+            self._render_function_list(c1_functions, y, left_margin, TERM_GREEN, TERM_DIM)
 
-        # Chapter 2: Matrix Operations
-        c2_complete = data.progress >= Progress.CHAPTER_2_COMPLETE
-        if c1_complete:
-            status_text = "ONLINE" if c2_complete else "INITIALIZING..."
-            status_color = TERM_GREEN if c2_complete else TERM_AMBER
         else:
-            status_text = "LOCKED"
-            status_color = TERM_DIM
+            # Show Chapter 2: Matrix Operations (chapter 1 complete)
+            c2_results = self._get_chapter2_results()
+            c2_complete = data.progress >= Progress.CHAPTER_2_COMPLETE
 
-        section_header = self.font_small.render(f"MATRIX OPS: {status_text}", True, status_color)
-        self.screen.blit(section_header, (left_margin, y))
-        y += 30
+            status_text = "COMPLETE" if c2_complete else "MATRIX OPS"
+            section_header = self.font_small.render(f"CHAPTER 2: {status_text}", True, TERM_GREEN if c2_complete else TERM_AMBER)
+            self.screen.blit(section_header, (left_margin, y))
+            y += 30
 
-        # Chapter 2 function results
-        c2_functions = [
-            ("transpose", "M^T", c2_results.get("transpose")),
-            ("trace", "trace(M)", c2_results.get("trace")),
-            ("diag_extract", "diag(M)", c2_results.get("diag_extract")),
-            ("sum_rows", "sum rows", c2_results.get("sum_rows")),
-            ("sum_cols", "sum cols", c2_results.get("sum_cols")),
-            ("frobenius_norm_sq", "||M||^2", c2_results.get("frobenius_norm_sq")),
-        ]
+            c2_functions = [
+                ("transpose", "M^T", c2_results.get("transpose")),
+                ("trace", "trace(M)", c2_results.get("trace")),
+                ("diag_extract", "diag(M)", c2_results.get("diag_extract")),
+                ("sum_rows", "sum rows", c2_results.get("sum_rows")),
+                ("sum_cols", "sum cols", c2_results.get("sum_cols")),
+                ("frobenius_norm_sq", "||M||^2", c2_results.get("frobenius_norm_sq")),
+            ]
 
-        # Only show chapter 2 details if chapter 1 is complete
-        if c1_complete:
             self._render_function_list(c2_functions, y, left_margin, TERM_GREEN, TERM_DIM)
 
         # Render debug progress bar at bottom of terminal

@@ -22,11 +22,11 @@ def main() -> None:
     pygame.init()
 
     # Parse resolution from environment or use default
-    resolution_str = os.environ.get("SUM_ETERNAL_RESOLUTION", "640x480")
+    resolution_str = os.environ.get("SUM_ETERNAL_RESOLUTION", "960x720")
     try:
         width, height = map(int, resolution_str.split("x"))
     except ValueError:
-        width, height = 640, 480
+        width, height = 960, 720
 
     # Create display
     screen = pygame.display.set_mode((width, height))
