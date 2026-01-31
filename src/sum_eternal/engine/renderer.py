@@ -231,9 +231,8 @@ class Renderer:
 
     def _render_gameplay(self, data: GameData, game_map: Map) -> None:
         """Render the main gameplay view."""
-        if data.progress < Progress.CHAPTER_1_COMPLETE:
-            self._render_waiting(data)
-        elif data.progress < Progress.CHAPTER_3_COMPLETE:
+        # Show debug view from the start - it displays per-function progress
+        if data.progress < Progress.CHAPTER_3_COMPLETE:
             self._render_debug_view(data)
         elif data.progress < Progress.CHAPTER_5_COMPLETE:
             self._render_2d_map(data, game_map)
@@ -242,16 +241,6 @@ class Renderer:
 
         # Always show progress bar at bottom
         self._render_progress_bar(data)
-
-    def _render_waiting(self, data: GameData) -> None:
-        """Render waiting for first implementation."""
-        text = self.font_medium.render("SYSTEMS INITIALIZING...", True, GREEN)
-        text_rect = text.get_rect(center=(self.width // 2, self.height // 2))
-        self.screen.blit(text, text_rect)
-
-        hint = self.font_small.render("Complete c01_first_blood.py to begin", True, GRAY)
-        hint_rect = hint.get_rect(center=(self.width // 2, self.height // 2 + 40))
-        self.screen.blit(hint, hint_rect)
 
     def _render_debug_view(self, data: GameData) -> None:
         """Render the debug visualization for Chapters 1-2.
@@ -271,10 +260,18 @@ class Renderer:
         pygame.draw.rect(self.screen, TERM_BG, term_rect)
         pygame.draw.rect(self.screen, TERM_GREEN, term_rect, 2)
 
-        # Header with double line
+        # Header - changes based on progress
         header_y = margin + 15
-        title = "SUM ETERNAL - SYSTEMS INITIALIZING"
-        header_text = self.font_medium.render(title, True, TERM_GREEN)
+        if data.progress >= Progress.CHAPTER_2_COMPLETE:
+            title = "SUM ETERNAL - SYSTEMS ONLINE"
+            title_color = TERM_GREEN
+        elif data.progress >= Progress.CHAPTER_1_COMPLETE:
+            title = "SUM ETERNAL - MATRIX OPS INITIALIZING"
+            title_color = TERM_AMBER
+        else:
+            title = "SUM ETERNAL - BOOT SEQUENCE"
+            title_color = TERM_AMBER
+        header_text = self.font_medium.render(title, True, title_color)
         header_rect = header_text.get_rect(centerx=self.width // 2, y=header_y)
         self.screen.blit(header_text, header_rect)
 
@@ -779,15 +776,147 @@ class Renderer:
         # Background
         pygame.draw.rect(self.screen, DARK_GRAY, (0, y, self.width, bar_height))
 
-        # Progress text
+        # Get function-level progress for current chapter
+        func_progress = self._get_function_progress(data)
+
+        # Left side: chapter progress
         progress_name = data.progress.name.replace("_", " ").title()
         text = self.font_tiny.render(f"Progress: {progress_name}", True, WHITE)
-        self.screen.blit(text, (10, y + 10))
+        self.screen.blit(text, (10, y + 5))
 
-        # Controls hint
+        # Function progress bar below the text
+        if func_progress:
+            completed, total, chapter_name = func_progress
+            bar_width = 150
+            bar_x = 10
+            bar_y = y + 22
+            bar_h = 12
+
+            # Background bar
+            pygame.draw.rect(self.screen, (40, 40, 40), (bar_x, bar_y, bar_width, bar_h))
+
+            # Fill bar
+            fill_width = int((completed / total) * bar_width)
+            if fill_width > 0:
+                fill_color = GREEN if completed == total else YELLOW
+                pygame.draw.rect(self.screen, fill_color, (bar_x, bar_y, fill_width, bar_h))
+
+            # Border
+            pygame.draw.rect(self.screen, GRAY, (bar_x, bar_y, bar_width, bar_h), 1)
+
+            # Count text
+            count_text = self.font_tiny.render(f"{chapter_name}: {completed}/{total}", True, WHITE)
+            self.screen.blit(count_text, (bar_x + bar_width + 10, bar_y - 2))
+
+        # Controls hint (right side)
         controls = "WASD: Move | Arrows: Turn | Space: Sum"
         hint = self.font_tiny.render(controls, True, GRAY)
-        self.screen.blit(hint, (self.width - hint.get_width() - 10, y + 10))
+        self.screen.blit(hint, (self.width - hint.get_width() - 10, y + 12))
+
+    def _get_function_progress(self, data: GameData) -> tuple[int, int, str] | None:
+        """Get current chapter's function progress (completed, total, chapter_name)."""
+        # Determine which chapter to show progress for
+        if data.progress < Progress.CHAPTER_1_COMPLETE:
+            results = self._get_chapter1_results()
+            completed = sum(1 for v in results.values() if v is not None)
+            return (completed, 6, "Ch1")
+        elif data.progress < Progress.CHAPTER_2_COMPLETE:
+            results = self._get_chapter2_results()
+            completed = sum(1 for v in results.values() if v is not None)
+            return (completed, 6, "Ch2")
+        elif data.progress < Progress.CHAPTER_3_COMPLETE:
+            # After ch2, show chapter 3 progress
+            return self._get_chapter_n_progress(3)
+        elif data.progress < Progress.CHAPTER_4_COMPLETE:
+            return self._get_chapter_n_progress(4)
+        elif data.progress < Progress.CHAPTER_5_COMPLETE:
+            return self._get_chapter_n_progress(5)
+        elif data.progress < Progress.CHAPTER_6_COMPLETE:
+            return self._get_chapter_n_progress(6)
+        elif data.progress < Progress.CHAPTER_7_COMPLETE:
+            return self._get_chapter_n_progress(7)
+        elif data.progress < Progress.CHAPTER_8_COMPLETE:
+            return self._get_chapter_n_progress(8)
+        return None
+
+    def _get_chapter_n_progress(self, chapter: int) -> tuple[int, int, str] | None:
+        """Get progress for chapters 3-9 by testing each function."""
+        import jax.numpy as jnp
+
+        # Test data for each chapter
+        batch = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+        vec = jnp.array([1.0, 2.0])
+        angles = jnp.array([0.0, 1.57])
+        scalar = jnp.array(1.0)
+        mat = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+
+        # Define test calls for each function
+        chapter_tests: dict[int, list[tuple[str, str, tuple]]] = {
+            3: [
+                ("solutions.c03_the_slaughter_batch", "batch_vector_sum", (batch,)),
+                ("solutions.c03_the_slaughter_batch", "batch_dot_pairwise", (batch, batch)),
+                ("solutions.c03_the_slaughter_batch", "batch_magnitude_sq", (batch,)),
+                ("solutions.c03_the_slaughter_batch", "all_pairs_dot", (batch, batch)),
+                ("solutions.c03_the_slaughter_batch", "batch_matrix_vector", (mat[None, :, :], vec)),
+                ("solutions.c03_the_slaughter_batch", "batch_outer", (batch, batch)),
+            ],
+            4: [
+                ("solutions.c04_rip_and_trace", "angles_to_directions", (angles,)),
+                ("solutions.c04_rip_and_trace", "rotate_vectors", (batch, scalar)),
+                ("solutions.c04_rip_and_trace", "normalize_vectors", (batch,)),
+                ("solutions.c04_rip_and_trace", "scale_vectors", (batch, vec)),
+            ],
+            5: [
+                ("solutions.c05_total_intersection", "cross_2d", (vec, vec)),
+                ("solutions.c05_total_intersection", "batch_cross_2d", (batch, batch)),
+                ("solutions.c05_total_intersection", "all_pairs_cross_2d", (batch, batch)),
+                ("solutions.c05_total_intersection", "ray_wall_determinants", (batch, batch)),
+                ("solutions.c05_total_intersection", "ray_wall_t_values", (batch, batch, batch, batch)),
+                ("solutions.c05_total_intersection", "ray_wall_s_values", (batch, batch, batch, batch)),
+            ],
+            6: [
+                ("solutions.c06_infernal_projection", "fisheye_correct", (vec, angles)),
+                ("solutions.c06_infernal_projection", "distance_to_height", (vec, scalar)),
+                ("solutions.c06_infernal_projection", "shade_by_distance", (vec, scalar)),
+                ("solutions.c06_infernal_projection", "build_column_masks", (vec, jnp.array([100, 200]))),
+            ],
+            7: [
+                ("solutions.c07_spooky_action_at_a_distance", "point_distances", (vec, batch)),
+                ("solutions.c07_spooky_action_at_a_distance", "all_pairs_distances", (batch, batch)),
+                ("solutions.c07_spooky_action_at_a_distance", "points_to_angles", (vec, batch)),
+                ("solutions.c07_spooky_action_at_a_distance", "angle_in_fov", (vec, scalar, scalar)),
+                ("solutions.c07_spooky_action_at_a_distance", "project_to_screen_x", (vec, scalar, jnp.array(320))),
+                ("solutions.c07_spooky_action_at_a_distance", "sprite_scale", (vec, scalar)),
+            ],
+            8: [
+                ("solutions.c08_the_icon_of_ein", "project_points_onto_ray", (batch, vec, vec)),
+                ("solutions.c08_the_icon_of_ein", "perpendicular_distance_to_ray", (batch, vec, vec)),
+                ("solutions.c08_the_icon_of_ein", "ray_hits_target", (batch, vec, vec, scalar)),
+                ("solutions.c08_the_icon_of_ein", "move_toward_point", (vec, vec, scalar)),
+            ],
+        }
+
+        if chapter not in chapter_tests:
+            return None
+
+        tests = chapter_tests[chapter]
+        completed = 0
+        total = len(tests)
+
+        for module_name, func_name, args in tests:
+            try:
+                import importlib
+                module = importlib.import_module(module_name)
+                func = getattr(module, func_name)
+                func(*args)  # If this doesn't raise NotImplementedError, it's implemented
+                completed += 1
+            except NotImplementedError:
+                pass
+            except Exception:
+                # Other errors (like wrong shape) mean at least they tried
+                completed += 1
+
+        return (completed, total, f"Ch{chapter}")
 
     def _render_error_overlay(self, message: str) -> None:
         """Render error message overlay."""
