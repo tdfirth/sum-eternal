@@ -14,6 +14,11 @@ This chapter transforms raw ray distances into the rendered 3D view. Students le
 
 **The fix**: Multiply distance by cos(ray_angle - player_angle).
 
+**Socratic questions**:
+- "If a wall is 10 units in front of you, but you measure along a diagonal ray, is the measured distance longer or shorter than 10?"
+- "What's cos(0)? What does that mean for the center ray?"
+- "What's cos(30 degrees)? How does that affect edge rays?"
+
 **Not einsum**: Simple element-wise operations.
 
 **Solution**:
@@ -30,6 +35,11 @@ def fisheye_correct(dists, angles, player_angle):
 
 **The formula**: `height = screen_height / distance`
 
+**Socratic questions**:
+- "If a wall is twice as far, how tall should it appear on screen?"
+- "What happens as distance approaches zero? How do we handle that?"
+- "Why is it screen_height / distance and not distance / screen_height?"
+
 **Solution**:
 ```python
 def distance_to_height(dists, screen_h):
@@ -41,6 +51,11 @@ def distance_to_height(dists, screen_h):
 **What it teaches**: Distance-based fog effect using einsum for broadcasting.
 
 **The pattern**: `'rc,r->rc'` (or use broadcasting)
+
+**Socratic questions**:
+- "If something is at max_dist, what should its shade factor be? What about at distance 0?"
+- "Why do we clamp to [0.2, 1.0] instead of [0, 1]?"
+- "Colors have shape (r, 3) and shades have shape (r,). How do we multiply them?"
 
 **The approach**:
 1. Compute shade factor: `1 - (dist / max_dist)`, clamped to [0.2, 1.0]
@@ -61,6 +76,11 @@ def shade_by_distance(colors, dists, max_dist):
 **What it teaches**: Building 2D masks with broadcasting.
 
 **Not einsum**: Uses comparison broadcasting.
+
+**Socratic questions**:
+- "If a wall has height 100 and the screen is 480 pixels tall, what are the top and bottom row numbers?"
+- "How do we create a boolean array where each cell says 'is this row within the wall height'?"
+- "Why use broadcasting instead of a loop?"
 
 **The approach**:
 1. Compute top and bottom row for each column

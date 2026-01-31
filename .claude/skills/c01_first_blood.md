@@ -17,6 +17,10 @@ This chapter introduces the fundamental einsum patterns. Students learn that:
 
 **Explanation**: Index `i` appears on input but not output, so all elements along `i` get summed into a scalar.
 
+**Socratic questions**:
+- "What happens to an index that appears on the left but not on the right of the arrow?"
+- "If your input has shape (5,) and your output is a scalar, what must have happened to those 5 elements?"
+
 **Common mistakes**:
 - Trying `'i->i'` (keeps the vector, doesn't sum)
 - Using `jnp.sum()` instead of einsum (works but misses the point)
@@ -34,6 +38,10 @@ def vector_sum(v):
 **The pattern**: `'i,i->i'`
 
 **Explanation**: Same index `i` on both inputs means they're aligned element-wise. Index `i` in output means we keep the result for each position.
+
+**Socratic questions**:
+- "Both inputs have index `i` and the output has `i`. What does that tell you about alignment?"
+- "What would `'i,j->ij'` produce instead? Why is that different?"
 
 **Common mistakes**:
 - `'i,j->ij'` (outer product, not element-wise)
@@ -71,6 +79,10 @@ def dot_product(a, b):
 
 **Explanation**: Different indices mean no alignment. Both indices in output mean we create a 2D result with every combination.
 
+**Socratic questions**:
+- "If we have two vectors of lengths 3 and 4, what shape should the outer product be?"
+- "Why do we use different letters (i, j) instead of the same letter for both inputs?"
+
 **Common mistakes**:
 - Using same index for both inputs
 - Output index order (doesn't matter for this case, but builds intuition)
@@ -91,6 +103,10 @@ def outer_product(a, b):
 - `ij` for matrix (rows i, columns j)
 - `j` for vector (elements indexed by j)
 - `->i` output has rows only (columns contracted)
+
+**Socratic questions**:
+- "Which dimension of the matrix must match the vector length?"
+- "The `j` index appears in both inputs but not the output. What happens to it?"
 
 **Common mistakes**:
 - Getting row/column indices backward
@@ -113,6 +129,10 @@ def matrix_vector_mul(M, v):
 - Second matrix: rows `j`, columns `k`
 - Shared index `j` gets contracted (summed over)
 - Result: rows `i`, columns `k`
+
+**Socratic questions**:
+- "For matrix multiplication A @ B, which dimension of A must match which dimension of B?"
+- "If A is 3x4 and B is 4x5, what shape is the result and why?"
 
 **Common mistakes**:
 - Index order confusion

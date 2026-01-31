@@ -25,6 +25,10 @@ Einsum makes this natural: the batch index just becomes another letter.
 - `i` disappears → sum each vector
 - `b` remains → keep results separate per batch
 
+**Socratic questions**:
+- "If we have 10 vectors each of length 5, and we want one sum per vector, what shape is the output?"
+- "Which index represents 'which vector' and which represents 'position within vector'?"
+
 **Common mistakes**:
 - `'bi->'` (sums everything into one number)
 - Writing a loop (defeats the purpose!)
@@ -46,6 +50,10 @@ def batch_vector_sum(batch):
 - Same `i` on both inputs → element-wise alignment
 - Only `b` in output → sum over `i` for each batch
 
+**Socratic questions**:
+- "How is `'bi,bi->b'` related to `'i,i->'` from Chapter 1?"
+- "If both inputs have the same `b` index, what gets paired with what?"
+
 **Common mistakes**:
 - Confusing with all-pairs (next function)
 
@@ -62,6 +70,10 @@ def batch_dot_pairwise(a, b):
 **The pattern**: `'bi,bi->b'`
 
 **Explanation**: Same as batch_dot_pairwise, but with the same array twice. Computes ||v||² for each vector.
+
+**Socratic questions**:
+- "The dot product of a vector with itself gives what geometric quantity?"
+- "How do you compute ||v||² using a dot product?"
 
 **Solution**:
 ```python
@@ -81,6 +93,11 @@ def batch_magnitude_sq(v):
 - Output `ij` → n×m result matrix
 
 This is the foundation of attention mechanisms, distance matrices, etc.
+
+**Socratic questions**:
+- "What's the difference between `'bi,bi->b'` and `'id,jd->ij'`?"
+- "If we have 5 vectors in set A and 7 vectors in set B, what shape is the all-pairs result?"
+- "Why do we use different letters (i, j) for the batch dimensions here?"
 
 **Common mistakes**:
 - Using same index for both batches (gives pairwise)
@@ -104,6 +121,10 @@ def all_pairs_dot(a, b):
 - Contract over `j` (matrix columns, vector elements)
 - Result: transformed vectors, still batched
 
+**Socratic questions**:
+- "The matrix has indices `ij` and the vectors have `bj`. Which index gets contracted away?"
+- "If we apply a 3x3 matrix to a batch of 100 vectors, what's the output shape?"
+
 **Common mistakes**:
 - Index order confusion (`'ij,bj->bi'` not `'ij,jb->ib'`)
 
@@ -123,6 +144,10 @@ def batch_matrix_vector(M, batch):
 - Same `b` on both → corresponding batches paired
 - Different vector indices (`i`, `j`) → outer product
 - All three in output → 3D result
+
+**Socratic questions**:
+- "If we have 10 pairs of vectors (lengths 3 and 4), what shape is the batch outer product?"
+- "Why do we keep all three indices (b, i, j) in the output?"
 
 **Solution**:
 ```python

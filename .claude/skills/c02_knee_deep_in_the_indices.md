@@ -17,6 +17,10 @@ This chapter covers matrix rearrangements and reductions. Students learn:
 
 **Explanation**: Simply swap the order of indices in the output. No contraction, just rearrangement.
 
+**Socratic questions**:
+- "If the input has shape (3, 5), what shape should the transpose have?"
+- "What happens if you just swap the order of indices on the right side of the arrow?"
+
 **Common mistakes**:
 - Overcomplicating it — this is the simplest possible pattern
 
@@ -52,6 +56,10 @@ def trace(M):
 
 **Explanation**: Same diagonal selection as trace, but keeping the index in output preserves the elements as a vector instead of summing.
 
+**Socratic questions**:
+- "What's the difference between `'ii->'` and `'ii->i'`?"
+- "If the matrix is 5x5, what shape is the extracted diagonal?"
+
 **Common mistakes**:
 - Confusing with trace (which sums)
 
@@ -71,6 +79,10 @@ def diag_extract(M):
 - `j` disappears → sum over columns
 - `i` remains → keep rows separate
 - Result: one value per row
+
+**Socratic questions**:
+- "If `j` is the column index and it disappears, what are we summing over?"
+- "For a 3x4 matrix, what shape would `'ij->i'` produce?"
 
 **Common mistakes**:
 - Confusing row vs column (common!)
@@ -93,6 +105,10 @@ def sum_rows(M):
 - `j` remains → keep columns separate
 - Result: one value per column
 
+**Socratic questions**:
+- "How is this different from sum_rows? Which index survives?"
+- "If you wanted one number per column, which index should stay in the output?"
+
 **Solution**:
 ```python
 def sum_cols(M):
@@ -109,6 +125,10 @@ def sum_cols(M):
 - Same indices on both inputs → element-wise alignment (M with itself)
 - No output indices → sum everything
 - Result: sum of M[i,j]² for all i,j
+
+**Socratic questions**:
+- "What do you get when you element-wise multiply a matrix with itself?"
+- "After squaring each element, what happens when all indices disappear from the output?"
 
 **Common mistakes**:
 - Trying to do element-wise square differently

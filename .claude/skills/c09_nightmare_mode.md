@@ -10,6 +10,11 @@ Optional advanced content. These functions add textures to the raycaster. They'r
 
 **What it teaches**: Mapping continuous coordinates to discrete texture indices.
 
+**Socratic questions**:
+- "If s = 0.5 and texture width is 64, which column should we sample?"
+- "What happens when s = 1.0 exactly? How do we prevent out-of-bounds?"
+- "Why use floor instead of round for the conversion?"
+
 **The approach**: Simple index calculation with bounds checking.
 
 **Solution**:
@@ -26,6 +31,12 @@ def texture_column_lookup(hit_s, tex_width):
 **What it teaches**: Interpolating between four texel values.
 
 **The math**: Bilinear interpolation uses weights based on fractional position.
+
+**Socratic questions**:
+- "If you're at position (1.5, 2.5), which four texels do you sample?"
+- "How do you compute the fractional part of a coordinate?"
+- "What weight should the top-left texel get if fx=0.3 and fy=0.2?"
+- "Why is bilinear interpolation better than nearest-neighbor for textures?"
 
 **This is complex**:
 ```
@@ -81,6 +92,12 @@ def bilinear_sample(texture, coords):
 1. Perspective projection math
 2. Coordinate system transformations
 3. Batch operations over entire screen
+
+**Socratic questions**:
+- "The further a floor row is from the horizon, what happens to the distance it represents?"
+- "How does row_distance relate to the screen row's distance from the horizon?"
+- "Once you know the distance, how do you convert to world coordinates using player angle?"
+- "Why does floor casting need to know the player's position and angle?"
 
 **Simplified approach**:
 ```python

@@ -58,20 +58,34 @@ class Wall:
         return math.sqrt(dx * dx + dy * dy)
 
 
+# Wall color constants
+RED = (255, 0, 0)
+DARK_RED = (150, 0, 0)
+BLUE = (0, 0, 255)
+DARK_BLUE = (0, 0, 150)
+GREEN = (0, 255, 0)
+DARK_GREEN = (0, 150, 0)
+BRIGHT_GREEN = (0, 200, 0)
+DIM_GREEN = (0, 100, 0)
+
 # Wall definitions
 # Each wall: (x1, y1, x2, y2, color)
 WALLS: list[Wall] = [
-    # Outer walls (slightly darker on N/S vs E/W for visual distinction)
-    Wall(-20, -20, 20, -20, (100, 100, 100)),   # South wall
-    Wall(20, -20, 20, 20, (120, 120, 120)),     # East wall
-    Wall(20, 20, -20, 20, (100, 100, 100)),     # North wall
-    Wall(-20, 20, -20, -20, (120, 120, 120)),   # West wall
+    # Outer walls - 40x40 arena from -20 to +20
+    # North wall: RED
+    Wall(-20, 20, 20, 20, RED),      # North wall (top of map, y=20)
+    # South wall: DARK_RED
+    Wall(-20, -20, 20, -20, DARK_RED),   # South wall (bottom of map, y=-20)
+    # East wall: BLUE
+    Wall(20, -20, 20, 20, BLUE),     # East wall (right side, x=20)
+    # West wall: DARK_BLUE
+    Wall(-20, -20, -20, 20, DARK_BLUE),   # West wall (left side, x=-20)
 
-    # Central pillar (4x4, centered at origin)
-    Wall(-2, -2, 2, -2, (80, 80, 80)),          # South face
-    Wall(2, -2, 2, 2, (90, 90, 90)),            # East face
-    Wall(2, 2, -2, 2, (80, 80, 80)),            # North face
-    Wall(-2, 2, -2, -2, (90, 90, 90)),          # West face
+    # Central pillar (4x4, centered at origin) - GREEN variants
+    Wall(-2, 2, 2, 2, GREEN),            # North face
+    Wall(-2, -2, 2, -2, DARK_GREEN),     # South face
+    Wall(2, -2, 2, 2, BRIGHT_GREEN),     # East face
+    Wall(-2, -2, -2, 2, DIM_GREEN),      # West face
 ]
 
 
@@ -87,8 +101,15 @@ EINSTEIN_SPAWNS: list[tuple[float, float]] = [
 class Map:
     """Game map containing wall data."""
 
-    def __init__(self, walls: Sequence[Wall] | None = None) -> None:
+    def __init__(self, walls: Sequence[Wall] | None = None,
+                 spawn_points: Sequence[tuple[float, float]] | None = None) -> None:
         self.walls = list(walls) if walls else list(WALLS)
+        self._spawn_points = list(spawn_points) if spawn_points else list(EINSTEIN_SPAWNS)
+
+    @property
+    def einstein_spawn_points(self) -> list[tuple[float, float]]:
+        """Return the Einstein spawn points."""
+        return self._spawn_points
 
     @property
     def wall_data(self) -> dict:

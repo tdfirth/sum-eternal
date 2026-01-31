@@ -12,6 +12,11 @@ This chapter adds the Einsteins (sprites) to the world. Students learn to comput
 
 **What it teaches**: Euclidean distance from origin to multiple points.
 
+**Socratic questions**:
+- "What's the first step in computing distance between two points?"
+- "How does `'ni,ni->n'` compute squared magnitudes for a batch of vectors?"
+- "Why compute squared distance first, then sqrt, instead of component-wise?"
+
 **The approach**:
 1. Compute difference vectors: `points - origin`
 2. Squared magnitudes: `'ni,ni->n'`
@@ -28,6 +33,11 @@ def point_distances(origin, points):
 ### 7.2 all_pairs_distances
 
 **What it teaches**: Distance matrix between two sets of points.
+
+**Socratic questions**:
+- "Why use `||a-b||² = ||a||² + ||b||² - 2(a·b)` instead of computing all differences directly?"
+- "What einsum patterns do you need for ||a||², ||b||², and a·b?"
+- "How do you combine these three terms with the right broadcasting?"
 
 **The approach**: Use the identity `||a-b||² = ||a||² + ||b||² - 2(a·b)`
 
@@ -51,6 +61,11 @@ def all_pairs_distances(a, b):
 
 **Uses atan2**: Handles all quadrants correctly.
 
+**Socratic questions**:
+- "Why use atan2(y, x) instead of atan(y/x)?"
+- "What angle does atan2 return for a point directly to the east? North? West?"
+- "What's the first step before calling atan2?"
+
 **Solution**:
 ```python
 def points_to_angles(origin, points):
@@ -63,6 +78,11 @@ def points_to_angles(origin, points):
 **What it teaches**: FOV checking with angle wraparound.
 
 **The tricky part**: Angles wrap at ±π. Need to normalize differences.
+
+**Socratic questions**:
+- "If player_angle is 170 degrees and target_angle is -170 degrees, what's the actual angular distance?"
+- "How do you normalize an angle difference to [-π, π]?"
+- "What does 'within FOV' mean mathematically?"
 
 **Solution**:
 ```python
@@ -81,6 +101,11 @@ def angle_in_fov(angles, player_angle, fov):
 
 **The formula**: `x = width/2 + (angle_diff / (fov/2)) * (width/2)`
 
+**Socratic questions**:
+- "If something is directly ahead (angle_diff = 0), what's its screen x coordinate?"
+- "If something is at the left edge of FOV (angle_diff = -fov/2), what x does it map to?"
+- "How does this formula map [-fov/2, +fov/2] to [0, width]?"
+
 **Solution**:
 ```python
 def project_to_screen_x(angles, player_angle, fov, width):
@@ -94,6 +119,10 @@ def project_to_screen_x(angles, player_angle, fov, width):
 ### 7.6 sprite_scale
 
 **What it teaches**: Size scales inversely with distance.
+
+**Socratic questions**:
+- "If base_size is 100 and distance is 2, how big should the sprite appear?"
+- "This is the same formula as distance_to_height. Why?"
 
 **Solution**:
 ```python

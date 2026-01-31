@@ -51,6 +51,10 @@ s = ((A - P) × D) / det
 
 **Not einsum**: Simple arithmetic.
 
+**Socratic questions**:
+- "For vectors a = (a_x, a_y) and b = (b_x, b_y), what's the formula for the 2D cross product?"
+- "What does the sign of the cross product tell you about the vectors' orientation?"
+
 **Solution**:
 ```python
 def cross_2d(a, b):
@@ -63,6 +67,10 @@ def cross_2d(a, b):
 
 **The approach**: Component-wise operations on arrays.
 
+**Socratic questions**:
+- "How would you compute `a[0]*b[1] - a[1]*b[0]` for many pairs of vectors at once?"
+- "What shape are a[:, 0] and b[:, 1] if a and b have shape (n, 2)?"
+
 **Solution**:
 ```python
 def batch_cross_2d(a, b):
@@ -74,6 +82,10 @@ def batch_cross_2d(a, b):
 **What it teaches**: Cross product for every (ray, wall) pair.
 
 **The key insight**: Use einsum's broadcasting for outer-product-like structure.
+
+**Socratic questions**:
+- "For `a_x[r] * b_y[w]`, what einsum pattern creates all pairs?"
+- "If we have r rays and w walls, what shape should the all-pairs cross product be?"
 
 **Solution**:
 ```python
@@ -89,6 +101,10 @@ def all_pairs_cross_2d(a, b):
 
 **What it teaches**: The determinants are just cross products of directions.
 
+**Socratic questions**:
+- "In Cramer's rule, the denominator is the determinant. How is that related to a cross product?"
+- "What does it mean geometrically when the determinant is zero?"
+
 **Same as all_pairs_cross_2d**:
 ```python
 def ray_wall_determinants(ray_dirs, wall_dirs):
@@ -100,6 +116,11 @@ def ray_wall_determinants(ray_dirs, wall_dirs):
 **What it teaches**: Computing t (distance along ray) for all intersections.
 
 **The formula**: `t = ((A - P) × W) / det`
+
+**Socratic questions**:
+- "What does the t value represent geometrically? If t = 5, what does that tell you?"
+- "Why do we need to compute (A - P) where A is wall start and P is player position?"
+- "What should we do when the denominator (det) is close to zero?"
 
 **Solution**:
 ```python
@@ -123,6 +144,11 @@ def ray_wall_t_values(player, ray_dirs, wall_starts, wall_dirs):
 **What it teaches**: Computing s (position along wall) for all intersections.
 
 **The formula**: `s = ((A - P) × D) / det`
+
+**Socratic questions**:
+- "What does s = 0.5 mean? What about s = 0 or s = 1?"
+- "Why is the formula for s different from t? (Uses D instead of W)"
+- "A valid wall intersection has 0 <= s <= 1. What happens if s is outside this range?"
 
 **Solution**:
 ```python

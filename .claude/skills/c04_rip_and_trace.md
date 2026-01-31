@@ -14,6 +14,11 @@ Not everything is pure einsum here. Some operations combine einsum with regular 
 
 **Not pure einsum**: This uses `jnp.cos`, `jnp.sin`, and `jnp.stack`.
 
+**Socratic questions**:
+- "If an angle is 0 (pointing east), what are the x and y components of the unit vector?"
+- "What about angle π/2 (pointing north)?"
+- "Which trigonometric function gives the x component? Which gives y?"
+
 **The approach**:
 ```python
 cos_vals = jnp.cos(angles)  # shape (r,)
@@ -39,11 +44,19 @@ def angles_to_directions(angles):
 - Apply to each of n vectors
 - This is batch matrix-vector multiplication
 
+**Socratic questions**:
+- "A 2D rotation matrix is 2x2. The vectors are 2D. How does this relate to `'ij,j->i'` from Chapter 1?"
+- "Why is the einsum `'ij,nj->ni'` and not `'ij,jn->in'`? What does the index order mean?"
+
 **The rotation matrix**:
 ```
 R = [[cos(θ), -sin(θ)],
      [sin(θ),  cos(θ)]]
 ```
+
+**Common mistakes**:
+- Building the rotation matrix incorrectly (sign of sin term)
+- Index order in einsum
 
 **Solution**:
 ```python
@@ -61,6 +74,15 @@ def rotate_vectors(vecs, angle):
 1. Compute squared magnitudes: `'ni,ni->n'`
 2. Take square root
 3. Divide each component by magnitude
+
+**Socratic questions**:
+- "How do you compute the magnitude (length) of a vector using a dot product?"
+- "Once you have the magnitudes, how do you scale each vector to length 1?"
+- "What happens if a vector has length 0? How do we handle that?"
+
+**Common mistakes**:
+- Forgetting to handle zero-length vectors
+- Wrong broadcasting when dividing
 
 **Watch out for**: Zero-length vectors (add epsilon to avoid division by zero).
 
@@ -83,6 +105,13 @@ def normalize_vectors(v):
 - Each vector has its own scale factor
 - Broadcast the scale to each component
 - This is element-wise multiplication with broadcasting
+
+**Socratic questions**:
+- "If each of 10 vectors needs its own scale factor, what shape is the scales array?"
+- "How does `'nd,n->nd'` broadcast the scalar to both components of each vector?"
+
+**Common mistakes**:
+- Shape mismatch between vectors and scales
 
 **Solution**:
 ```python

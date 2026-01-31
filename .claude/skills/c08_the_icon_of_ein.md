@@ -17,6 +17,11 @@ This chapter implements combat — the ability to "sum" Einsteins. Students lear
 
 **The pattern**: `'ni,i->n'`
 
+**Socratic questions**:
+- "What does the dot product of two vectors tell you geometrically?"
+- "Why do we compute (P - O) first? What does this vector represent?"
+- "If the result is negative, what does that mean about the point's position?"
+
 **Solution**:
 ```python
 def project_points_onto_ray(points, origin, direction):
@@ -30,6 +35,11 @@ def project_points_onto_ray(points, origin, direction):
 
 **The math**: Use 2D cross product magnitude:
 `perp_dist = |cross((P - O), D)|`
+
+**Socratic questions**:
+- "The dot product gives distance along the ray. What does the cross product magnitude give?"
+- "Why do we take the absolute value of the cross product?"
+- "If perpendicular distance is 0, what does that mean geometrically?"
 
 **Solution**:
 ```python
@@ -49,6 +59,11 @@ def perpendicular_distance_to_ray(points, origin, direction):
 2. Target before wall: `proj_dist < wall_dist`
 3. Close enough to ray: `perp_dist < radii`
 
+**Socratic questions**:
+- "Why check proj_dist > 0? What would happen if we didn't?"
+- "Why does the target need to be closer than the wall?"
+- "What does it mean for perpendicular distance to be less than the radius?"
+
 **Solution**:
 ```python
 def ray_hits_target(proj_dist, perp_dist, radii, wall_dist):
@@ -61,6 +76,11 @@ def ray_hits_target(proj_dist, perp_dist, radii, wall_dist):
 ### 8.4 move_toward_point
 
 **What it teaches**: AI movement using normalization and scaling.
+
+**Socratic questions**:
+- "Why do we normalize the direction vector before scaling?"
+- "How do speed and dt combine to determine movement distance?"
+- "What einsum pattern scales each direction vector by its own speed?"
 
 **The approach**:
 1. Compute direction to target
