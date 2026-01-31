@@ -29,8 +29,8 @@ def batch_vector_sum(batch):
         [6, 15]
 
     Hint:
-        The batch dimension survives, the vector dimension gets summed.
-        Pattern: 'bi->b'
+        Think of it as sum_rows from Chapter 2, but the "row" is now the batch.
+        Which dimension survives? Which gets summed away?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Sum them all. At once.")
@@ -54,9 +54,8 @@ def batch_dot_pairwise(a, b):
         [17, 53]  # [1*5+2*6, 3*7+4*8]
 
     Hint:
-        Same batch index, same vector index, both get matched.
-        Sum over the vector dimension, keep the batch dimension.
-        Pattern: 'bi,bi->b'
+        Like dot_product from Chapter 1, but with a batch dimension.
+        Each pair shares the same batch position. What gets contracted?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Pairwise. Parallel. Perfect.")
@@ -79,7 +78,7 @@ def batch_magnitude_sq(v):
 
     Hint:
         Dot product of each vector with itself.
-        Pattern: 'bi,bi->b'
+        Same as batch_dot_pairwise, but both inputs are the same array.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Square the components. Sum the results.")
@@ -104,9 +103,9 @@ def all_pairs_dot(a, b):
          [1, 3]]   # [0*1+1*1, 0*2+1*3]
 
     Hint:
-        Different batch indices (i for a, j for b), same dimension index (d).
-        Sum over d, keep i and j.
-        Pattern: 'id,jd->ij'
+        Each vector in 'a' pairs with EVERY vector in 'b'.
+        They share the dimension 'd' but have different batch indices.
+        What's the output shape?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Every pair. No exceptions.")
@@ -130,9 +129,8 @@ def batch_matrix_vector(M, batch):
         [[0, 1], [-1, 0], [-1, 1]]
 
     Hint:
-        Matrix indices are ij, batch vector indices are bj.
-        Contract over j, keep b and i (which becomes the new component index).
-        Pattern: 'ij,bj->bi'
+        Like matrix_vector_mul, but the vector has an extra batch dimension.
+        The matrix's columns match the vector's components. Which indices survive?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Transform them all. Simultaneously.")
@@ -157,8 +155,8 @@ def batch_outer(a, b):
          [[24, 27, 30], [32, 36, 40]]]
 
     Hint:
-        Same batch index, different vector indices.
-        Pattern: 'bi,bj->bij'
+        Like outer_product from Chapter 1, but with a batch dimension.
+        The batch index must match; the vector indices are independent.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Outer products. In parallel. The batch is complete.")

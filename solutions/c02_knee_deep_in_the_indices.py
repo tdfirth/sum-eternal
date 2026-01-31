@@ -31,8 +31,8 @@ def transpose(M):
          [3, 6]]
 
     Hint:
-        Just swap the order of indices on the output.
-        Pattern: 'ij->ji'
+        Rows become columns, columns become rows.
+        How do you reorder the indices on the output side?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Flip the dimensions.")
@@ -54,9 +54,8 @@ def trace(M):
         15.0  # 1 + 5 + 9
 
     Hint:
-        Use the same index twice to select the diagonal.
-        Then sum by not including it in the output.
-        Pattern: 'ii->'
+        The diagonal is where row index equals column index.
+        How do you express "same position" in einsum? What if nothing survives?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Follow the diagonal.")
@@ -78,9 +77,8 @@ def diag_extract(M):
         [1, 5, 9]
 
     Hint:
-        Same index twice selects the diagonal.
-        Keep the index in the output to preserve the elements.
-        Pattern: 'ii->i'
+        Like trace, but you want to keep the values, not sum them.
+        What changes on the output side?
     """
     # YOUR CODE HERE
     raise NotImplementedError("The diagonal reveals itself.")
@@ -102,8 +100,8 @@ def sum_rows(M):
         [6, 15]
 
     Hint:
-        Keep the row index, sum away the column index.
-        Pattern: 'ij->i'
+        You want one value per row. Which index represents rows?
+        Which index should disappear (get summed)?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Collapse the columns.")
@@ -125,8 +123,8 @@ def sum_cols(M):
         [5, 7, 9]
 
     Hint:
-        Keep the column index, sum away the row index.
-        Pattern: 'ij->j'
+        You want one value per column. Which index represents columns?
+        The opposite of sum_rows.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Collapse the rows.")
@@ -151,8 +149,8 @@ def frobenius_norm_sq(M):
         30.0  # 1 + 4 + 9 + 16
 
     Hint:
-        Element-wise multiply M with itself, then sum everything.
-        Pattern: 'ij,ij->'
+        You need M squared element-wise, then summed.
+        How do you multiply a matrix with itself in einsum? What survives?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Square and sum. The norm approaches.")

@@ -28,9 +28,8 @@ def vector_sum(v):
         6.0
 
     Hint:
-        The einsum signature has indices on the left, nothing on the right.
-        When an index appears on the input but not the output, it gets summed.
-        What does 'i->' mean?
+        When an index appears on the input but not the output, what happens?
+        You have one dimension going in, zero dimensions coming out.
     """
     # YOUR CODE HERE
     raise NotImplementedError("Time to rip and tensor.")
@@ -52,8 +51,8 @@ def element_multiply(a, b):
         [3.0, 8.0]
 
     Hint:
-        Same index on both inputs, same index on output.
-        Nothing gets summed away. The pattern is 'i,i->i'.
+        Both vectors use the same positions. Nothing disappears.
+        What index letter would you use? Does it survive to the output?
     """
     # YOUR CODE HERE
     raise NotImplementedError("The notation awaits.")
@@ -75,8 +74,8 @@ def dot_product(a, b):
         32.0  # 1*4 + 2*5 + 3*6
 
     Hint:
-        Same index on both inputs, no index on output.
-        Multiply element-wise, then sum. What's the pattern?
+        You multiply matching positions, then add them all up.
+        The index appears twice on the left. What's on the right?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Indices aligned. Execute.")
@@ -99,9 +98,8 @@ def outer_product(a, b):
          [6.0, 8.0, 10.0]]
 
     Hint:
-        Different indices on inputs, both indices on output.
-        No index is summed away — you're building a 2D grid.
-        Pattern: 'i,j->ij'
+        Each input has its own dimension. The output has both.
+        If 'a' has index i and 'b' has index j, what shape is the result?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Expand your dimensions.")
@@ -125,9 +123,8 @@ def matrix_vector_mul(M, v):
         [3.0, 7.0]
 
     Hint:
-        The shared index (columns of M, elements of v) gets summed.
-        The row index of M survives to the output.
-        Pattern: 'ij,j->i'
+        M has rows and columns. v matches M's columns.
+        Which dimension gets contracted away? Which survives?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Contract the inner dimension.")
@@ -152,9 +149,8 @@ def matrix_matrix_mul(A, B):
          [43.0, 50.0]]
 
     Hint:
-        The shared index (columns of A, rows of B) gets contracted.
-        Rows of A and columns of B survive.
-        Pattern: 'ij,jk->ik'
+        A is (n,m), B is (m,p). The 'm' dimension is shared.
+        What happens to shared indices? What shape is the output?
     """
     # YOUR CODE HERE
     raise NotImplementedError("FIRST BLOOD. Complete the contraction.")

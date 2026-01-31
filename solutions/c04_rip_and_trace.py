@@ -107,8 +107,8 @@ def scale_vectors(v, scales):
         [[2, 4], [1.5, 2]]
 
     Hint:
-        Each scale applies to all components of its vector.
-        Pattern: 'nd,n->nd'
+        Each scale (a scalar per vector) multiplies all components of that vector.
+        The scale broadcasts across the dimension 'd'. What indices match?
     """
     # YOUR CODE HERE
     raise NotImplementedError("Scale the rays. Control the reach.")
