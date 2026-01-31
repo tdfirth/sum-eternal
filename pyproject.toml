@@ -1,0 +1,37 @@
+[project]
+name = "sum-eternal"
+version = "0.1.0"
+description = "Learn einsum by building DOOM"
+readme = "README.md"
+authors = [
+    { name = "Tom Firth", email = "thomas.d.firth@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "jax[cpu]>=0.4.20",
+    "pygame>=2.5.0",
+    "watchdog>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-xdist>=3.0.0",
+]
+
+[project.scripts]
+sum-eternal = "sum_eternal.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sum_eternal"]
