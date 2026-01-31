@@ -160,9 +160,8 @@ class Game:
 
             # State-specific key handling
             if self.data.state == GameState.TITLE:
-                # Any key starts if there's progress
-                if self.data.progress > Progress.NOTHING:
-                    self.data.state = GameState.TUTORIAL
+                # Any key enters the game - debug view shows progress
+                self.data.state = GameState.TUTORIAL
 
             elif self.data.state == GameState.VICTORY:
                 if event.key == pygame.K_n:
