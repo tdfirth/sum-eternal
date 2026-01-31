@@ -1010,19 +1010,23 @@ class Renderer:
     def _get_function_progress(self, data: GameData) -> tuple[int, int, str] | None:
         """Get current chapter's function progress (completed, total, chapter_name)."""
         # Determine which chapter to show progress for
+        # Count only successful results (not None and not "ERROR")
         if data.progress < Progress.CHAPTER_1_COMPLETE:
             results = self._get_chapter1_results()
-            completed = sum(1 for v in results.values() if v is not None)
+            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
             return (completed, 6, "Ch1")
         elif data.progress < Progress.CHAPTER_2_COMPLETE:
             results = self._get_chapter2_results()
-            completed = sum(1 for v in results.values() if v is not None)
+            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
             return (completed, 6, "Ch2")
         elif data.progress < Progress.CHAPTER_3_COMPLETE:
-            # After ch2, show chapter 3 progress
-            return self._get_chapter_n_progress(3)
+            results = self._get_chapter3_results()
+            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
+            return (completed, 6, "Ch3")
         elif data.progress < Progress.CHAPTER_4_COMPLETE:
-            return self._get_chapter_n_progress(4)
+            results = self._get_chapter4_results()
+            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
+            return (completed, 4, "Ch4")
         elif data.progress < Progress.CHAPTER_5_COMPLETE:
             return self._get_chapter_n_progress(5)
         elif data.progress < Progress.CHAPTER_6_COMPLETE:
