@@ -346,9 +346,6 @@ class Renderer:
             ]
             self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
 
-        # Render debug progress bar at bottom of terminal
-        self._render_debug_progress(data, margin, term_rect[1] + term_rect[3] - 30, TERM_GREEN, TERM_DIM)
-
     def _render_function_list(
         self,
         functions: list[tuple[str, str, str | None]],
@@ -385,42 +382,6 @@ class Renderer:
             y += 22
 
         return y
-
-    def _render_debug_progress(
-        self,
-        data: GameData,
-        x: int,
-        y: int,
-        color_fill: tuple[int, int, int],
-        color_bg: tuple[int, int, int]
-    ) -> None:
-        """Render a progress bar showing function completion within current chapter."""
-        bar_width = self.width - 2 * x - 40
-        bar_height = 16
-
-        # Get function-level progress for the current chapter
-        func_progress = self._get_function_progress(data)
-        if func_progress:
-            completed, total, chapter_name = func_progress
-        else:
-            completed, total, chapter_name = 0, 1, "Done"
-
-        fill_width = int((completed / total) * bar_width) if total > 0 else 0
-
-        # Draw progress bar background
-        pygame.draw.rect(self.screen, color_bg, (x, y, bar_width, bar_height))
-
-        # Draw progress bar fill
-        if fill_width > 0:
-            pygame.draw.rect(self.screen, color_fill, (x, y, fill_width, bar_height))
-
-        # Draw border
-        pygame.draw.rect(self.screen, color_fill, (x, y, bar_width, bar_height), 1)
-
-        # Progress text
-        progress_pct = int((completed / total) * 100) if total > 0 else 100
-        pct_text = self.font_tiny.render(f"{chapter_name}: {completed}/{total} ({progress_pct}%)", True, color_fill)
-        self.screen.blit(pct_text, (x + bar_width + 5, y))
 
     def _get_chapter1_results(self) -> dict[str, str | None]:
         """Get results from Chapter 1 functions, or None if not implemented."""
