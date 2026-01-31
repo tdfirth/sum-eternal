@@ -231,22 +231,20 @@ class Renderer:
 
     def _render_gameplay(self, data: GameData, game_map: Map) -> None:
         """Render the main gameplay view."""
-        # Show debug view from the start - it displays per-function progress
-        if data.progress < Progress.CHAPTER_3_COMPLETE:
-            self._render_debug_view(data)
-        elif data.progress < Progress.CHAPTER_5_COMPLETE:
-            self._render_2d_map(data, game_map)
+        # Show debug view for chapters 1-4 (until 3D unlocks)
+        if data.progress < Progress.CHAPTER_5_COMPLETE:
+            self._render_debug_view(data, game_map)
         else:
             self._render_3d_view(data, game_map)
 
         # Always show progress bar at bottom
         self._render_progress_bar(data)
 
-    def _render_debug_view(self, data: GameData) -> None:
-        """Render the debug visualization for Chapters 1-2.
+    def _render_debug_view(self, data: GameData, game_map: Map) -> None:
+        """Render the debug visualization for Chapters 1-4.
 
         Shows a terminal/console aesthetic with operation results and
-        checkmarks for completed functions.
+        checkmarks for completed functions. Only shows the current chapter.
         """
         # Terminal-style colors
         TERM_GREEN = (0, 255, 128)
@@ -260,25 +258,27 @@ class Renderer:
         pygame.draw.rect(self.screen, TERM_BG, term_rect)
         pygame.draw.rect(self.screen, TERM_GREEN, term_rect, 2)
 
-        # Header - changes based on progress
-        header_y = margin + 15
-        if data.progress >= Progress.CHAPTER_2_COMPLETE:
-            title = "SUM ETERNAL - SYSTEMS ONLINE"
-            title_color = TERM_GREEN
-        elif data.progress >= Progress.CHAPTER_1_COMPLETE:
-            title = "SUM ETERNAL - MATRIX OPS INITIALIZING"
-            title_color = TERM_AMBER
+        # Determine current chapter
+        if data.progress < Progress.CHAPTER_1_COMPLETE:
+            current_chapter = 1
+        elif data.progress < Progress.CHAPTER_2_COMPLETE:
+            current_chapter = 2
+        elif data.progress < Progress.CHAPTER_3_COMPLETE:
+            current_chapter = 3
         else:
-            title = "SUM ETERNAL - BOOT SEQUENCE"
-            title_color = TERM_AMBER
+            current_chapter = 4
+
+        # Header
+        header_y = margin + 15
+        title = f"SUM ETERNAL - CHAPTER {current_chapter}"
+        title_color = TERM_AMBER
         header_text = self.font_medium.render(title, True, title_color)
         header_rect = header_text.get_rect(centerx=self.width // 2, y=header_y)
         self.screen.blit(header_text, header_rect)
 
         # Draw separator line
         sep_y = header_y + 35
-        sep_char = "="
-        sep_line = sep_char * (len(title) + 10)
+        sep_line = "=" * (len(title) + 10)
         sep_text = self.font_small.render(sep_line, True, TERM_GREEN)
         sep_rect = sep_text.get_rect(centerx=self.width // 2, y=sep_y)
         self.screen.blit(sep_text, sep_rect)
@@ -287,47 +287,64 @@ class Renderer:
         y = sep_y + 40
         left_margin = margin + 30
 
-        c1_complete = data.progress >= Progress.CHAPTER_1_COMPLETE
-
-        if not c1_complete:
-            # Show Chapter 1: Vector Operations
-            c1_results = self._get_chapter1_results()
-
-            section_header = self.font_small.render("CHAPTER 1: VECTOR OPS", True, TERM_AMBER)
+        # Chapter-specific content
+        if current_chapter == 1:
+            results = self._get_chapter1_results()
+            section_header = self.font_small.render("VECTOR OPS", True, TERM_AMBER)
             self.screen.blit(section_header, (left_margin, y))
             y += 30
-
-            c1_functions = [
-                ("vector_sum", "sum(v)", c1_results.get("vector_sum")),
-                ("element_multiply", "a * b", c1_results.get("element_multiply")),
-                ("dot_product", "a . b", c1_results.get("dot_product")),
-                ("outer_product", "a (x) b", c1_results.get("outer_product")),
-                ("matrix_vector_mul", "M @ v", c1_results.get("matrix_vector_mul")),
-                ("matrix_matrix_mul", "M @ M", c1_results.get("matrix_matrix_mul")),
+            functions = [
+                ("vector_sum", "sum(v)", results.get("vector_sum")),
+                ("element_multiply", "a * b", results.get("element_multiply")),
+                ("dot_product", "a . b", results.get("dot_product")),
+                ("outer_product", "a (x) b", results.get("outer_product")),
+                ("matrix_vector_mul", "M @ v", results.get("matrix_vector_mul")),
+                ("matrix_matrix_mul", "M @ M", results.get("matrix_matrix_mul")),
             ]
+            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
 
-            self._render_function_list(c1_functions, y, left_margin, TERM_GREEN, TERM_DIM)
-
-        else:
-            # Show Chapter 2: Matrix Operations (chapter 1 complete)
-            c2_results = self._get_chapter2_results()
-            c2_complete = data.progress >= Progress.CHAPTER_2_COMPLETE
-
-            status_text = "COMPLETE" if c2_complete else "MATRIX OPS"
-            section_header = self.font_small.render(f"CHAPTER 2: {status_text}", True, TERM_GREEN if c2_complete else TERM_AMBER)
+        elif current_chapter == 2:
+            results = self._get_chapter2_results()
+            section_header = self.font_small.render("MATRIX OPS", True, TERM_AMBER)
             self.screen.blit(section_header, (left_margin, y))
             y += 30
-
-            c2_functions = [
-                ("transpose", "M^T", c2_results.get("transpose")),
-                ("trace", "trace(M)", c2_results.get("trace")),
-                ("diag_extract", "diag(M)", c2_results.get("diag_extract")),
-                ("sum_rows", "sum rows", c2_results.get("sum_rows")),
-                ("sum_cols", "sum cols", c2_results.get("sum_cols")),
-                ("frobenius_norm_sq", "||M||^2", c2_results.get("frobenius_norm_sq")),
+            functions = [
+                ("transpose", "M^T", results.get("transpose")),
+                ("trace", "trace(M)", results.get("trace")),
+                ("diag_extract", "diag(M)", results.get("diag_extract")),
+                ("sum_rows", "sum rows", results.get("sum_rows")),
+                ("sum_cols", "sum cols", results.get("sum_cols")),
+                ("frobenius_norm_sq", "||M||^2", results.get("frobenius_norm_sq")),
             ]
+            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
 
-            self._render_function_list(c2_functions, y, left_margin, TERM_GREEN, TERM_DIM)
+        elif current_chapter == 3:
+            results = self._get_chapter3_results()
+            section_header = self.font_small.render("BATCH OPS", True, TERM_AMBER)
+            self.screen.blit(section_header, (left_margin, y))
+            y += 30
+            functions = [
+                ("batch_vector_sum", "batch sum", results.get("batch_vector_sum")),
+                ("batch_dot_pairwise", "batch dot", results.get("batch_dot_pairwise")),
+                ("batch_magnitude_sq", "batch |v|²", results.get("batch_magnitude_sq")),
+                ("all_pairs_dot", "all pairs", results.get("all_pairs_dot")),
+                ("batch_matrix_vector", "batch M@v", results.get("batch_matrix_vector")),
+                ("batch_outer", "batch outer", results.get("batch_outer")),
+            ]
+            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
+
+        elif current_chapter == 4:
+            results = self._get_chapter4_results()
+            section_header = self.font_small.render("RAY GENERATION", True, TERM_AMBER)
+            self.screen.blit(section_header, (left_margin, y))
+            y += 30
+            functions = [
+                ("angles_to_directions", "angles->dirs", results.get("angles_to_directions")),
+                ("rotate_vectors", "rotate vecs", results.get("rotate_vectors")),
+                ("normalize_vectors", "normalize", results.get("normalize_vectors")),
+                ("scale_vectors", "scale vecs", results.get("scale_vectors")),
+            ]
+            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
 
         # Render debug progress bar at bottom of terminal
         self._render_debug_progress(data, margin, term_rect[1] + term_rect[3] - 30, TERM_GREEN, TERM_DIM)
@@ -381,12 +398,16 @@ class Renderer:
         bar_width = self.width - 2 * x - 40
         bar_height = 16
 
-        # Calculate progress percentage (Chapters 1-2 = 2 chapters for debug view)
-        total_chapters = 2
+        # Calculate progress percentage (Chapters 1-4 for debug view)
+        total_chapters = 4
         completed = 0
         if data.progress >= Progress.CHAPTER_1_COMPLETE:
             completed += 1
         if data.progress >= Progress.CHAPTER_2_COMPLETE:
+            completed += 1
+        if data.progress >= Progress.CHAPTER_3_COMPLETE:
+            completed += 1
+        if data.progress >= Progress.CHAPTER_4_COMPLETE:
             completed += 1
 
         fill_width = int((completed / total_chapters) * bar_width)
@@ -557,6 +578,145 @@ class Renderer:
             results["frobenius_norm_sq"] = None
         except Exception:
             results["frobenius_norm_sq"] = "ERROR"
+
+        return results
+
+    def _get_chapter3_results(self) -> dict[str, str | None]:
+        """Get results from Chapter 3 functions, or None if not implemented."""
+        import importlib
+        import sys
+        import jax.numpy as jnp
+
+        results = {}
+
+        # Test data
+        batch = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        M = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+
+        # Force fresh import
+        module_name = "solutions.c03_the_slaughter_batch"
+        if module_name in sys.modules:
+            del sys.modules[module_name]
+
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            return {k: None for k in ["batch_vector_sum", "batch_dot_pairwise", "batch_magnitude_sq",
+                                       "all_pairs_dot", "batch_matrix_vector", "batch_outer"]}
+
+        try:
+            result = module.batch_vector_sum(batch)
+            arr = [int(x) for x in result]
+            results["batch_vector_sum"] = f"[{arr[0]},{arr[1]}]"
+        except NotImplementedError:
+            results["batch_vector_sum"] = None
+        except Exception:
+            results["batch_vector_sum"] = "ERROR"
+
+        try:
+            result = module.batch_dot_pairwise(batch, batch)
+            arr = [int(x) for x in result]
+            results["batch_dot_pairwise"] = f"[{arr[0]},{arr[1]}]"
+        except NotImplementedError:
+            results["batch_dot_pairwise"] = None
+        except Exception:
+            results["batch_dot_pairwise"] = "ERROR"
+
+        try:
+            result = module.batch_magnitude_sq(batch)
+            arr = [int(x) for x in result]
+            results["batch_magnitude_sq"] = f"[{arr[0]},{arr[1]}]"
+        except NotImplementedError:
+            results["batch_magnitude_sq"] = None
+        except Exception:
+            results["batch_magnitude_sq"] = "ERROR"
+
+        try:
+            a = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+            b = jnp.array([[1.0, 1.0], [2.0, 0.0]])
+            result = module.all_pairs_dot(a, b)
+            results["all_pairs_dot"] = "2x2 matrix"
+        except NotImplementedError:
+            results["all_pairs_dot"] = None
+        except Exception:
+            results["all_pairs_dot"] = "ERROR"
+
+        try:
+            vecs = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+            result = module.batch_matrix_vector(M, vecs)
+            results["batch_matrix_vector"] = "2x2 result"
+        except NotImplementedError:
+            results["batch_matrix_vector"] = None
+        except Exception:
+            results["batch_matrix_vector"] = "ERROR"
+
+        try:
+            a = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+            b = jnp.array([[1.0], [2.0]])
+            result = module.batch_outer(a, b)
+            results["batch_outer"] = "2x2x1 result"
+        except NotImplementedError:
+            results["batch_outer"] = None
+        except Exception:
+            results["batch_outer"] = "ERROR"
+
+        return results
+
+    def _get_chapter4_results(self) -> dict[str, str | None]:
+        """Get results from Chapter 4 functions, or None if not implemented."""
+        import importlib
+        import sys
+        import jax.numpy as jnp
+
+        results = {}
+
+        # Force fresh import
+        module_name = "solutions.c04_rip_and_trace"
+        if module_name in sys.modules:
+            del sys.modules[module_name]
+
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            return {k: None for k in ["angles_to_directions", "rotate_vectors",
+                                       "normalize_vectors", "scale_vectors"]}
+
+        try:
+            angles = jnp.array([0.0, jnp.pi/2])
+            result = module.angles_to_directions(angles)
+            results["angles_to_directions"] = "2x2 dirs"
+        except NotImplementedError:
+            results["angles_to_directions"] = None
+        except Exception:
+            results["angles_to_directions"] = "ERROR"
+
+        try:
+            vecs = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+            result = module.rotate_vectors(vecs, jnp.pi/2)
+            results["rotate_vectors"] = "rotated"
+        except NotImplementedError:
+            results["rotate_vectors"] = None
+        except Exception:
+            results["rotate_vectors"] = "ERROR"
+
+        try:
+            vecs = jnp.array([[3.0, 4.0], [0.0, 5.0]])
+            result = module.normalize_vectors(vecs)
+            results["normalize_vectors"] = "unit vecs"
+        except NotImplementedError:
+            results["normalize_vectors"] = None
+        except Exception:
+            results["normalize_vectors"] = "ERROR"
+
+        try:
+            vecs = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+            scales = jnp.array([2.0, 0.5])
+            result = module.scale_vectors(vecs, scales)
+            results["scale_vectors"] = "scaled"
+        except NotImplementedError:
+            results["scale_vectors"] = None
+        except Exception:
+            results["scale_vectors"] = "ERROR"
 
         return results
 
