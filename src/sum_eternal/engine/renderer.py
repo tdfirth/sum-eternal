@@ -356,17 +356,23 @@ class Renderer:
 
         Returns the new Y position after rendering.
         """
-        CHECK = "[OK]"  # Checkmark
-        PENDING = "[ ? ]"  # Pending
+        CHECK = "[OK]"
+        PENDING = "[ ? ]"
+        FAIL = "[FAIL]"
+        FAIL_COLOR = (255, 80, 80)  # Red for errors
 
         for func_name, display_name, result in functions:
-            if result is not None:
-                # Function is working
+            if result == "ERROR":
+                # Function implemented but broken
+                line = f"  {display_name:16} = {'error':16} {FAIL}"
+                color = FAIL_COLOR
+            elif result is not None:
+                # Function is working - show in green with result
                 line = f"  {display_name:16} = {result:16} {CHECK}"
                 color = color_ok
             else:
-                # Function not implemented
-                line = f"  {display_name:16} = {'?':16} {PENDING}"
+                # Function not implemented yet (NotImplementedError)
+                line = f"  {display_name:16} = {'---':16} {PENDING}"
                 color = color_pending
 
             text = self.font_small.render(line, True, color)
@@ -414,6 +420,8 @@ class Renderer:
 
     def _get_chapter1_results(self) -> dict[str, str | None]:
         """Get results from Chapter 1 functions, or None if not implemented."""
+        import importlib
+        import sys
         import jax.numpy as jnp
 
         results = {}
@@ -424,54 +432,75 @@ class Renderer:
         b = jnp.array([4.0, 5.0, 6.0, 7.0])
         M = jnp.array([[1.0, 2.0], [3.0, 4.0]])
 
-        try:
-            from solutions.c01_first_blood import vector_sum
-            result = vector_sum(v)
-            results["vector_sum"] = f"{float(result):.1f}"
-        except (NotImplementedError, ImportError, Exception):
-            results["vector_sum"] = None
+        # Force fresh import
+        module_name = "solutions.c01_first_blood"
+        if module_name in sys.modules:
+            del sys.modules[module_name]
 
         try:
-            from solutions.c01_first_blood import element_multiply
-            result = element_multiply(a[:2], b[:2])
+            module = importlib.import_module(module_name)
+        except ImportError:
+            return {k: None for k in ["vector_sum", "element_multiply", "dot_product",
+                                       "outer_product", "matrix_vector_mul", "matrix_matrix_mul"]}
+
+        # Test each function
+        # Returns: string = success, None = not implemented, "ERROR" = implemented but broken
+        try:
+            result = module.vector_sum(v)
+            results["vector_sum"] = f"{float(result):.1f}"
+        except NotImplementedError:
+            results["vector_sum"] = None
+        except Exception:
+            results["vector_sum"] = "ERROR"
+
+        try:
+            result = module.element_multiply(a[:2], b[:2])
             arr = [float(x) for x in result]
             results["element_multiply"] = f"[{arr[0]:.0f}, {arr[1]:.0f}]"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["element_multiply"] = None
+        except Exception:
+            results["element_multiply"] = "ERROR"
 
         try:
-            from solutions.c01_first_blood import dot_product
-            result = dot_product(a, b)
+            result = module.dot_product(a, b)
             results["dot_product"] = f"{float(result):.1f}"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["dot_product"] = None
+        except Exception:
+            results["dot_product"] = "ERROR"
 
         try:
-            from solutions.c01_first_blood import outer_product
-            result = outer_product(jnp.array([1.0, 2.0]), jnp.array([3.0, 4.0]))
+            result = module.outer_product(jnp.array([1.0, 2.0]), jnp.array([3.0, 4.0]))
             results["outer_product"] = "[[3,4],[6,8]]"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["outer_product"] = None
+        except Exception:
+            results["outer_product"] = "ERROR"
 
         try:
-            from solutions.c01_first_blood import matrix_vector_mul
-            result = matrix_vector_mul(M, jnp.array([1.0, 1.0]))
+            result = module.matrix_vector_mul(M, jnp.array([1.0, 1.0]))
             arr = [float(x) for x in result]
             results["matrix_vector_mul"] = f"[{arr[0]:.0f}, {arr[1]:.0f}]"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["matrix_vector_mul"] = None
+        except Exception:
+            results["matrix_vector_mul"] = "ERROR"
 
         try:
-            from solutions.c01_first_blood import matrix_matrix_mul
-            result = matrix_matrix_mul(M, M)
+            result = module.matrix_matrix_mul(M, M)
             results["matrix_matrix_mul"] = "[[7,10],[15,22]]"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["matrix_matrix_mul"] = None
+        except Exception:
+            results["matrix_matrix_mul"] = "ERROR"
 
         return results
 
     def _get_chapter2_results(self) -> dict[str, str | None]:
         """Get results from Chapter 2 functions, or None if not implemented."""
+        import importlib
+        import sys
         import jax.numpy as jnp
 
         results = {}
@@ -479,50 +508,67 @@ class Renderer:
         # Test matrix
         M = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
 
+        # Force fresh import
+        module_name = "solutions.c02_knee_deep_in_the_indices"
+        if module_name in sys.modules:
+            del sys.modules[module_name]
+
         try:
-            from solutions.c02_knee_deep_in_the_indices import transpose
-            result = transpose(M)
+            module = importlib.import_module(module_name)
+        except ImportError:
+            return {k: None for k in ["transpose", "trace", "diag_extract",
+                                       "sum_rows", "sum_cols", "frobenius_norm_sq"]}
+
+        try:
+            result = module.transpose(M)
             results["transpose"] = "3x3 matrix"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["transpose"] = None
+        except Exception:
+            results["transpose"] = "ERROR"
 
         try:
-            from solutions.c02_knee_deep_in_the_indices import trace
-            result = trace(M)
+            result = module.trace(M)
             results["trace"] = f"{float(result):.1f}"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["trace"] = None
+        except Exception:
+            results["trace"] = "ERROR"
 
         try:
-            from solutions.c02_knee_deep_in_the_indices import diag_extract
-            result = diag_extract(M)
+            result = module.diag_extract(M)
             arr = [int(x) for x in result]
             results["diag_extract"] = f"[{arr[0]},{arr[1]},{arr[2]}]"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["diag_extract"] = None
+        except Exception:
+            results["diag_extract"] = "ERROR"
 
         try:
-            from solutions.c02_knee_deep_in_the_indices import sum_rows
-            result = sum_rows(M)
+            result = module.sum_rows(M)
             arr = [int(x) for x in result]
             results["sum_rows"] = f"[{arr[0]},{arr[1]},{arr[2]}]"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["sum_rows"] = None
+        except Exception:
+            results["sum_rows"] = "ERROR"
 
         try:
-            from solutions.c02_knee_deep_in_the_indices import sum_cols
-            result = sum_cols(M)
+            result = module.sum_cols(M)
             arr = [int(x) for x in result]
             results["sum_cols"] = f"[{arr[0]},{arr[1]},{arr[2]}]"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["sum_cols"] = None
+        except Exception:
+            results["sum_cols"] = "ERROR"
 
         try:
-            from solutions.c02_knee_deep_in_the_indices import frobenius_norm_sq
-            result = frobenius_norm_sq(M)
+            result = module.frobenius_norm_sq(M)
             results["frobenius_norm_sq"] = f"{float(result):.1f}"
-        except (NotImplementedError, ImportError, Exception):
+        except NotImplementedError:
             results["frobenius_norm_sq"] = None
+        except Exception:
+            results["frobenius_norm_sq"] = "ERROR"
 
         return results
 
