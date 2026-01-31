@@ -287,394 +287,98 @@ class Renderer:
         y = sep_y + 40
         left_margin = margin + 30
 
-        # Chapter-specific content
-        if current_chapter == 1:
-            results = self._get_chapter1_results()
-            section_header = self.font_small.render("VECTOR OPS", True, TERM_AMBER)
-            self.screen.blit(section_header, (left_margin, y))
-            y += 30
-            functions = [
-                ("vector_sum", "sum(v)", results.get("vector_sum")),
-                ("element_multiply", "a * b", results.get("element_multiply")),
-                ("dot_product", "a . b", results.get("dot_product")),
-                ("outer_product", "a (x) b", results.get("outer_product")),
-                ("matrix_vector_mul", "M @ v", results.get("matrix_vector_mul")),
-                ("matrix_matrix_mul", "M @ M", results.get("matrix_matrix_mul")),
-            ]
-            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
+        # Get chapter status from unified test system
+        from solutions.test_cases import get_chapter_status
 
-        elif current_chapter == 2:
-            results = self._get_chapter2_results()
-            section_header = self.font_small.render("MATRIX OPS", True, TERM_AMBER)
-            self.screen.blit(section_header, (left_margin, y))
-            y += 30
-            functions = [
-                ("transpose", "M^T", results.get("transpose")),
-                ("trace", "trace(M)", results.get("trace")),
-                ("diag_extract", "diag(M)", results.get("diag_extract")),
-                ("sum_rows", "sum rows", results.get("sum_rows")),
-                ("sum_cols", "sum cols", results.get("sum_cols")),
-                ("frobenius_norm_sq", "||M||^2", results.get("frobenius_norm_sq")),
-            ]
-            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
+        # Display names for functions
+        DISPLAY_NAMES = {
+            # Chapter 1
+            "vector_sum": "sum(v)",
+            "element_multiply": "a * b",
+            "dot_product": "a . b",
+            "outer_product": "a (x) b",
+            "matrix_vector_mul": "M @ v",
+            "matrix_matrix_mul": "M @ M",
+            # Chapter 2
+            "transpose": "M^T",
+            "trace": "trace(M)",
+            "diag_extract": "diag(M)",
+            "sum_rows": "sum rows",
+            "sum_cols": "sum cols",
+            "frobenius_norm_sq": "||M||^2",
+            # Chapter 3
+            "batch_vector_sum": "batch sum",
+            "batch_dot_pairwise": "batch dot",
+            "batch_magnitude_sq": "batch |v|²",
+            "all_pairs_dot": "all pairs",
+            "batch_matrix_vector": "batch M@v",
+            "batch_outer": "batch outer",
+            # Chapter 4
+            "angles_to_directions": "angles->dirs",
+            "rotate_vectors": "rotate vecs",
+            "normalize_vectors": "normalize",
+            "scale_vectors": "scale vecs",
+        }
 
-        elif current_chapter == 3:
-            results = self._get_chapter3_results()
-            section_header = self.font_small.render("BATCH OPS", True, TERM_AMBER)
-            self.screen.blit(section_header, (left_margin, y))
-            y += 30
-            functions = [
-                ("batch_vector_sum", "batch sum", results.get("batch_vector_sum")),
-                ("batch_dot_pairwise", "batch dot", results.get("batch_dot_pairwise")),
-                ("batch_magnitude_sq", "batch |v|²", results.get("batch_magnitude_sq")),
-                ("all_pairs_dot", "all pairs", results.get("all_pairs_dot")),
-                ("batch_matrix_vector", "batch M@v", results.get("batch_matrix_vector")),
-                ("batch_outer", "batch outer", results.get("batch_outer")),
-            ]
-            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
+        SECTION_NAMES = {
+            1: "VECTOR OPS",
+            2: "MATRIX OPS",
+            3: "BATCH OPS",
+            4: "RAY GENERATION",
+        }
 
-        elif current_chapter == 4:
-            results = self._get_chapter4_results()
-            section_header = self.font_small.render("RAY GENERATION", True, TERM_AMBER)
-            self.screen.blit(section_header, (left_margin, y))
-            y += 30
-            functions = [
-                ("angles_to_directions", "angles->dirs", results.get("angles_to_directions")),
-                ("rotate_vectors", "rotate vecs", results.get("rotate_vectors")),
-                ("normalize_vectors", "normalize", results.get("normalize_vectors")),
-                ("scale_vectors", "scale vecs", results.get("scale_vectors")),
-            ]
-            self._render_function_list(functions, y, left_margin, TERM_GREEN, TERM_DIM)
+        # Get status and render
+        section_header = self.font_small.render(SECTION_NAMES.get(current_chapter, ""), True, TERM_AMBER)
+        self.screen.blit(section_header, (left_margin, y))
+        y += 30
 
-    def _render_function_list(
+        status = get_chapter_status(current_chapter)
+        self._render_function_status(status, DISPLAY_NAMES, y, left_margin, TERM_GREEN, TERM_DIM)
+
+    def _render_function_status(
         self,
-        functions: list[tuple[str, str, str | None]],
+        status: dict[str, tuple[int, int, bool | None]],
+        display_names: dict[str, str],
         y: int,
         left_margin: int,
         color_ok: tuple[int, int, int],
         color_pending: tuple[int, int, int]
     ) -> int:
-        """Render a list of functions with their status.
+        """Render function status from unified test system.
+
+        Args:
+            status: dict mapping func_name -> (passed, total, is_implemented)
+            display_names: dict mapping func_name -> display string
+            y: starting Y position
+            left_margin: X position
+            color_ok: color for passing functions
+            color_pending: color for not-yet-implemented functions
 
         Returns the new Y position after rendering.
         """
-        CHECK = "[OK]"
-        PENDING = "[ ? ]"
-        FAIL = "[FAIL]"
         FAIL_COLOR = (255, 80, 80)  # Red for errors
 
-        for func_name, display_name, result in functions:
-            if result == "ERROR":
-                # Function implemented but broken
-                line = f"  {display_name:16} = {'error':16} {FAIL}"
-                color = FAIL_COLOR
-            elif result is not None:
-                # Function is working - show in green with result
-                line = f"  {display_name:16} = {result:16} {CHECK}"
+        for func_name, (passed, total, is_impl) in status.items():
+            display = display_names.get(func_name, func_name)
+
+            if is_impl is None:
+                # Not implemented yet
+                line = f"  {display:16}   {'---':8}  [ ? ]"
+                color = color_pending
+            elif is_impl is True:
+                # All tests passing
+                line = f"  {display:16}   {passed}/{total:5}  [OK]"
                 color = color_ok
             else:
-                # Function not implemented yet (NotImplementedError)
-                line = f"  {display_name:16} = {'---':16} {PENDING}"
-                color = color_pending
+                # Some tests failing
+                line = f"  {display:16}   {passed}/{total:5}  [FAIL]"
+                color = FAIL_COLOR
 
             text = self.font_small.render(line, True, color)
             self.screen.blit(text, (left_margin, y))
             y += 22
 
         return y
-
-    def _get_chapter1_results(self) -> dict[str, str | None]:
-        """Get results from Chapter 1 functions, or None if not implemented."""
-        import importlib
-        import sys
-        import jax.numpy as jnp
-
-        results = {}
-
-        # Test vectors
-        v = jnp.array([1.0, 2.0, 3.0])
-        a = jnp.array([1.0, 2.0, 3.0, 4.0])
-        b = jnp.array([4.0, 5.0, 6.0, 7.0])
-        M = jnp.array([[1.0, 2.0], [3.0, 4.0]])
-
-        # Force fresh import
-        module_name = "solutions.c01_first_blood"
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-
-        try:
-            module = importlib.import_module(module_name)
-        except ImportError:
-            return {k: None for k in ["vector_sum", "element_multiply", "dot_product",
-                                       "outer_product", "matrix_vector_mul", "matrix_matrix_mul"]}
-
-        # Test each function
-        # Returns: string = success, None = not implemented, "ERROR" = implemented but broken
-        try:
-            result = module.vector_sum(v)
-            results["vector_sum"] = f"{float(result):.1f}"
-        except NotImplementedError:
-            results["vector_sum"] = None
-        except Exception:
-            results["vector_sum"] = "ERROR"
-
-        try:
-            result = module.element_multiply(a[:2], b[:2])
-            arr = [float(x) for x in result]
-            results["element_multiply"] = f"[{arr[0]:.0f}, {arr[1]:.0f}]"
-        except NotImplementedError:
-            results["element_multiply"] = None
-        except Exception:
-            results["element_multiply"] = "ERROR"
-
-        try:
-            result = module.dot_product(a, b)
-            results["dot_product"] = f"{float(result):.1f}"
-        except NotImplementedError:
-            results["dot_product"] = None
-        except Exception:
-            results["dot_product"] = "ERROR"
-
-        try:
-            result = module.outer_product(jnp.array([1.0, 2.0]), jnp.array([3.0, 4.0]))
-            results["outer_product"] = "[[3,4],[6,8]]"
-        except NotImplementedError:
-            results["outer_product"] = None
-        except Exception:
-            results["outer_product"] = "ERROR"
-
-        try:
-            result = module.matrix_vector_mul(M, jnp.array([1.0, 1.0]))
-            arr = [float(x) for x in result]
-            results["matrix_vector_mul"] = f"[{arr[0]:.0f}, {arr[1]:.0f}]"
-        except NotImplementedError:
-            results["matrix_vector_mul"] = None
-        except Exception:
-            results["matrix_vector_mul"] = "ERROR"
-
-        try:
-            result = module.matrix_matrix_mul(M, M)
-            results["matrix_matrix_mul"] = "[[7,10],[15,22]]"
-        except NotImplementedError:
-            results["matrix_matrix_mul"] = None
-        except Exception:
-            results["matrix_matrix_mul"] = "ERROR"
-
-        return results
-
-    def _get_chapter2_results(self) -> dict[str, str | None]:
-        """Get results from Chapter 2 functions, or None if not implemented."""
-        import importlib
-        import sys
-        import jax.numpy as jnp
-
-        results = {}
-
-        # Test matrix
-        M = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
-
-        # Force fresh import
-        module_name = "solutions.c02_knee_deep_in_the_indices"
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-
-        try:
-            module = importlib.import_module(module_name)
-        except ImportError:
-            return {k: None for k in ["transpose", "trace", "diag_extract",
-                                       "sum_rows", "sum_cols", "frobenius_norm_sq"]}
-
-        try:
-            result = module.transpose(M)
-            results["transpose"] = "3x3 matrix"
-        except NotImplementedError:
-            results["transpose"] = None
-        except Exception:
-            results["transpose"] = "ERROR"
-
-        try:
-            result = module.trace(M)
-            results["trace"] = f"{float(result):.1f}"
-        except NotImplementedError:
-            results["trace"] = None
-        except Exception:
-            results["trace"] = "ERROR"
-
-        try:
-            result = module.diag_extract(M)
-            arr = [int(x) for x in result]
-            results["diag_extract"] = f"[{arr[0]},{arr[1]},{arr[2]}]"
-        except NotImplementedError:
-            results["diag_extract"] = None
-        except Exception:
-            results["diag_extract"] = "ERROR"
-
-        try:
-            result = module.sum_rows(M)
-            arr = [int(x) for x in result]
-            results["sum_rows"] = f"[{arr[0]},{arr[1]},{arr[2]}]"
-        except NotImplementedError:
-            results["sum_rows"] = None
-        except Exception:
-            results["sum_rows"] = "ERROR"
-
-        try:
-            result = module.sum_cols(M)
-            arr = [int(x) for x in result]
-            results["sum_cols"] = f"[{arr[0]},{arr[1]},{arr[2]}]"
-        except NotImplementedError:
-            results["sum_cols"] = None
-        except Exception:
-            results["sum_cols"] = "ERROR"
-
-        try:
-            result = module.frobenius_norm_sq(M)
-            results["frobenius_norm_sq"] = f"{float(result):.1f}"
-        except NotImplementedError:
-            results["frobenius_norm_sq"] = None
-        except Exception:
-            results["frobenius_norm_sq"] = "ERROR"
-
-        return results
-
-    def _get_chapter3_results(self) -> dict[str, str | None]:
-        """Get results from Chapter 3 functions, or None if not implemented."""
-        import importlib
-        import sys
-        import jax.numpy as jnp
-
-        results = {}
-
-        # Test data
-        batch = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
-        M = jnp.array([[1.0, 2.0], [3.0, 4.0]])
-
-        # Force fresh import
-        module_name = "solutions.c03_the_slaughter_batch"
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-
-        try:
-            module = importlib.import_module(module_name)
-        except ImportError:
-            return {k: None for k in ["batch_vector_sum", "batch_dot_pairwise", "batch_magnitude_sq",
-                                       "all_pairs_dot", "batch_matrix_vector", "batch_outer"]}
-
-        try:
-            result = module.batch_vector_sum(batch)
-            arr = [int(x) for x in result]
-            results["batch_vector_sum"] = f"[{arr[0]},{arr[1]}]"
-        except NotImplementedError:
-            results["batch_vector_sum"] = None
-        except Exception:
-            results["batch_vector_sum"] = "ERROR"
-
-        try:
-            result = module.batch_dot_pairwise(batch, batch)
-            arr = [int(x) for x in result]
-            results["batch_dot_pairwise"] = f"[{arr[0]},{arr[1]}]"
-        except NotImplementedError:
-            results["batch_dot_pairwise"] = None
-        except Exception:
-            results["batch_dot_pairwise"] = "ERROR"
-
-        try:
-            result = module.batch_magnitude_sq(batch)
-            arr = [int(x) for x in result]
-            results["batch_magnitude_sq"] = f"[{arr[0]},{arr[1]}]"
-        except NotImplementedError:
-            results["batch_magnitude_sq"] = None
-        except Exception:
-            results["batch_magnitude_sq"] = "ERROR"
-
-        try:
-            a = jnp.array([[1.0, 0.0], [0.0, 1.0]])
-            b = jnp.array([[1.0, 1.0], [2.0, 0.0]])
-            result = module.all_pairs_dot(a, b)
-            results["all_pairs_dot"] = "2x2 matrix"
-        except NotImplementedError:
-            results["all_pairs_dot"] = None
-        except Exception:
-            results["all_pairs_dot"] = "ERROR"
-
-        try:
-            vecs = jnp.array([[1.0, 0.0], [0.0, 1.0]])
-            result = module.batch_matrix_vector(M, vecs)
-            results["batch_matrix_vector"] = "2x2 result"
-        except NotImplementedError:
-            results["batch_matrix_vector"] = None
-        except Exception:
-            results["batch_matrix_vector"] = "ERROR"
-
-        try:
-            a = jnp.array([[1.0, 2.0], [3.0, 4.0]])
-            b = jnp.array([[1.0], [2.0]])
-            result = module.batch_outer(a, b)
-            results["batch_outer"] = "2x2x1 result"
-        except NotImplementedError:
-            results["batch_outer"] = None
-        except Exception:
-            results["batch_outer"] = "ERROR"
-
-        return results
-
-    def _get_chapter4_results(self) -> dict[str, str | None]:
-        """Get results from Chapter 4 functions, or None if not implemented."""
-        import importlib
-        import sys
-        import jax.numpy as jnp
-
-        results = {}
-
-        # Force fresh import
-        module_name = "solutions.c04_rip_and_trace"
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-
-        try:
-            module = importlib.import_module(module_name)
-        except ImportError:
-            return {k: None for k in ["angles_to_directions", "rotate_vectors",
-                                       "normalize_vectors", "scale_vectors"]}
-
-        try:
-            angles = jnp.array([0.0, jnp.pi/2])
-            result = module.angles_to_directions(angles)
-            results["angles_to_directions"] = "2x2 dirs"
-        except NotImplementedError:
-            results["angles_to_directions"] = None
-        except Exception:
-            results["angles_to_directions"] = "ERROR"
-
-        try:
-            vecs = jnp.array([[1.0, 0.0], [0.0, 1.0]])
-            result = module.rotate_vectors(vecs, jnp.pi/2)
-            results["rotate_vectors"] = "rotated"
-        except NotImplementedError:
-            results["rotate_vectors"] = None
-        except Exception:
-            results["rotate_vectors"] = "ERROR"
-
-        try:
-            vecs = jnp.array([[3.0, 4.0], [0.0, 5.0]])
-            result = module.normalize_vectors(vecs)
-            results["normalize_vectors"] = "unit vecs"
-        except NotImplementedError:
-            results["normalize_vectors"] = None
-        except Exception:
-            results["normalize_vectors"] = "ERROR"
-
-        try:
-            vecs = jnp.array([[1.0, 2.0], [3.0, 4.0]])
-            scales = jnp.array([2.0, 0.5])
-            result = module.scale_vectors(vecs, scales)
-            results["scale_vectors"] = "scaled"
-        except NotImplementedError:
-            results["scale_vectors"] = None
-        except Exception:
-            results["scale_vectors"] = "ERROR"
-
-        return results
 
     def _render_2d_map(self, data: GameData, game_map: Map) -> None:
         """Render the 2D top-down map view."""
@@ -964,111 +668,36 @@ class Renderer:
         self.screen.blit(hint, (self.width - hint.get_width() - 10, y + 12))
 
     def _get_function_progress(self, data: GameData) -> tuple[int, int, str] | None:
-        """Get current chapter's function progress (completed, total, chapter_name)."""
+        """Get current chapter's function progress using unified test system."""
+        from solutions.test_cases import get_chapter_status
+
         # Determine which chapter to show progress for
-        # Count only successful results (not None and not "ERROR")
         if data.progress < Progress.CHAPTER_1_COMPLETE:
-            results = self._get_chapter1_results()
-            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
-            return (completed, 6, "Ch1")
+            chapter = 1
         elif data.progress < Progress.CHAPTER_2_COMPLETE:
-            results = self._get_chapter2_results()
-            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
-            return (completed, 6, "Ch2")
+            chapter = 2
         elif data.progress < Progress.CHAPTER_3_COMPLETE:
-            results = self._get_chapter3_results()
-            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
-            return (completed, 6, "Ch3")
+            chapter = 3
         elif data.progress < Progress.CHAPTER_4_COMPLETE:
-            results = self._get_chapter4_results()
-            completed = sum(1 for v in results.values() if v is not None and v != "ERROR")
-            return (completed, 4, "Ch4")
+            chapter = 4
         elif data.progress < Progress.CHAPTER_5_COMPLETE:
-            return self._get_chapter_n_progress(5)
+            chapter = 5
         elif data.progress < Progress.CHAPTER_6_COMPLETE:
-            return self._get_chapter_n_progress(6)
+            chapter = 6
         elif data.progress < Progress.CHAPTER_7_COMPLETE:
-            return self._get_chapter_n_progress(7)
+            chapter = 7
         elif data.progress < Progress.CHAPTER_8_COMPLETE:
-            return self._get_chapter_n_progress(8)
-        return None
-
-    def _get_chapter_n_progress(self, chapter: int) -> tuple[int, int, str] | None:
-        """Get progress for chapters 3-9 by testing each function."""
-        import jax.numpy as jnp
-
-        # Test data for each chapter
-        batch = jnp.array([[1.0, 2.0], [3.0, 4.0]])
-        vec = jnp.array([1.0, 2.0])
-        angles = jnp.array([0.0, 1.57])
-        scalar = jnp.array(1.0)
-        mat = jnp.array([[1.0, 2.0], [3.0, 4.0]])
-
-        # Define test calls for each function
-        chapter_tests: dict[int, list[tuple[str, str, tuple]]] = {
-            3: [
-                ("solutions.c03_the_slaughter_batch", "batch_vector_sum", (batch,)),
-                ("solutions.c03_the_slaughter_batch", "batch_dot_pairwise", (batch, batch)),
-                ("solutions.c03_the_slaughter_batch", "batch_magnitude_sq", (batch,)),
-                ("solutions.c03_the_slaughter_batch", "all_pairs_dot", (batch, batch)),
-                ("solutions.c03_the_slaughter_batch", "batch_matrix_vector", (mat[None, :, :], vec)),
-                ("solutions.c03_the_slaughter_batch", "batch_outer", (batch, batch)),
-            ],
-            4: [
-                ("solutions.c04_rip_and_trace", "angles_to_directions", (angles,)),
-                ("solutions.c04_rip_and_trace", "rotate_vectors", (batch, scalar)),
-                ("solutions.c04_rip_and_trace", "normalize_vectors", (batch,)),
-                ("solutions.c04_rip_and_trace", "scale_vectors", (batch, vec)),
-            ],
-            5: [
-                ("solutions.c05_total_intersection", "cross_2d", (vec, vec)),
-                ("solutions.c05_total_intersection", "batch_cross_2d", (batch, batch)),
-                ("solutions.c05_total_intersection", "all_pairs_cross_2d", (batch, batch)),
-                ("solutions.c05_total_intersection", "ray_wall_determinants", (batch, batch)),
-                ("solutions.c05_total_intersection", "ray_wall_t_values", (batch, batch, batch, batch)),
-                ("solutions.c05_total_intersection", "ray_wall_s_values", (batch, batch, batch, batch)),
-            ],
-            6: [
-                ("solutions.c06_infernal_projection", "fisheye_correct", (vec, angles)),
-                ("solutions.c06_infernal_projection", "distance_to_height", (vec, scalar)),
-                ("solutions.c06_infernal_projection", "shade_by_distance", (vec, scalar)),
-                ("solutions.c06_infernal_projection", "build_column_masks", (vec, jnp.array([100, 200]))),
-            ],
-            7: [
-                ("solutions.c07_spooky_action_at_a_distance", "point_distances", (vec, batch)),
-                ("solutions.c07_spooky_action_at_a_distance", "all_pairs_distances", (batch, batch)),
-                ("solutions.c07_spooky_action_at_a_distance", "points_to_angles", (vec, batch)),
-                ("solutions.c07_spooky_action_at_a_distance", "angle_in_fov", (vec, scalar, scalar)),
-                ("solutions.c07_spooky_action_at_a_distance", "project_to_screen_x", (vec, scalar, jnp.array(320))),
-                ("solutions.c07_spooky_action_at_a_distance", "sprite_scale", (vec, scalar)),
-            ],
-            8: [
-                ("solutions.c08_the_icon_of_ein", "project_points_onto_ray", (batch, vec, vec)),
-                ("solutions.c08_the_icon_of_ein", "perpendicular_distance_to_ray", (batch, vec, vec)),
-                ("solutions.c08_the_icon_of_ein", "ray_hits_target", (batch, vec, vec, scalar)),
-                ("solutions.c08_the_icon_of_ein", "move_toward_point", (vec, vec, scalar)),
-            ],
-        }
-
-        if chapter not in chapter_tests:
+            chapter = 8
+        else:
             return None
 
-        tests = chapter_tests[chapter]
-        completed = 0
-        total = len(tests)
+        status = get_chapter_status(chapter)
+        if not status:
+            return None
 
-        for module_name, func_name, args in tests:
-            try:
-                import importlib
-                module = importlib.import_module(module_name)
-                func = getattr(module, func_name)
-                func(*args)  # If this doesn't raise NotImplementedError, it's implemented
-                completed += 1
-            except NotImplementedError:
-                pass
-            except Exception:
-                # Other errors (like wrong shape) mean at least they tried
-                completed += 1
+        # Count functions with all tests passing
+        completed = sum(1 for _, (_, _, is_impl) in status.items() if is_impl is True)
+        total = len(status)
 
         return (completed, total, f"Ch{chapter}")
 
